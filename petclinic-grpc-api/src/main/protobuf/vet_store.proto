@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.example";
+option java_outer_classname = "PetStoreProto";
+option objc_class_prefix = "PST";
+
+package vetstore;
+
+message GetVetsRequest {}
+
+message Specialty {
+    string name = 1;    
+} 
+
+message Vet {
+    string first_name = 1;
+    string last_name = 2;
+    repeated Specialty specialties = 3;
+}
+
+message GetVetsResponse {
+    repeated Vet vets = 1;
+}
+
+service VetsStore {
+    rpc GetVets(GetVetsRequest) returns (GetVetsResponse) {}
+}
