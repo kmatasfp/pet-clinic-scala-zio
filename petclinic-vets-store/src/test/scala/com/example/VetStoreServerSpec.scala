@@ -1,15 +1,16 @@
-package com.example.vet_store
+package com.example
 
 import zio.test._
 import Assertion.hasSameElements
 import io.grpc.ManagedChannelBuilder
 import scalapb.zio_grpc.ZManagedChannel
+import com.examples.proto.api.vet_store.{ GetVetsRequest, Specialty, Vet, ZioVetStore }
 
 object VetStoreServerSpec extends DefaultRunnableSpec {
   def spec = suite("VetStoreServer")(
     testM("should return list of Vets") {
 
-      val vets = PetStoreServer
+      val vets = VetStoreServer
         .run(List.empty)
         .forkManaged
         .use_(ZioVetStore.VetsStoreClient.getVets(GetVetsRequest()).map(_.vets))
