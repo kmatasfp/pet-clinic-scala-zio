@@ -1,16 +1,10 @@
 package com.example
 
-import io.getquill.Embedded
+import zio.Has
 
 package object model {
 
-  case class Specialty(id: Int, first: String) extends Embedded
+  type VetDao = Has[VetDao.Service]
+  type DbTransactor = Has[DbTransactor.Resource]
 
-  case class Vet(
-      id: Int,
-      firstName: String,
-      lastName: String
-    )
-
-  case class VetSpecialty(vetId: Int, specaltyId: Int)
 }

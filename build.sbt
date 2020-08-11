@@ -9,13 +9,13 @@ lazy val commonSettings = Seq(
     "-Xfatal-warnings",
     "-Ywarn-dead-code",
     "-Ywarn-numeric-widen",
-    "-Wunused",
     "-Xlint:inaccessible",
     "-Xlint:infer-any",
     "-Xlint:stars-align",
     "-Xlint:nonlocal-return",
     "-Xlint:constant",
-    "-Xlint:adapted-args"
+    "-Xlint:adapted-args",
+    "-language:existentials"
   )
 )
 
@@ -48,8 +48,12 @@ lazy val petclinicVetsStore = project
       "org.tpolecat" %% "doobie-core" % "0.9.0",
       "org.tpolecat" %% "doobie-h2" % "0.9.0",
       "org.tpolecat" %% "doobie-quill" % "0.9.0",
+      "mysql" % "mysql-connector-java" % "8.0.21",
       "dev.zio" %% "zio-test" % "1.0.0" % Test,
-      "com.h2database" % "h2" % "1.4.200" % Test
-    )
+      "dev.zio" %% "zio-test-sbt" % "1.0.0" % Test,
+      "com.dimafeng" %% "testcontainers-scala-core" % "0.38.1" % Test,
+      "com.dimafeng" %% "testcontainers-scala-mysql" % "0.38.1" % Test
+    ),
+    testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
   )
   .dependsOn(petclinicGrpcApi)

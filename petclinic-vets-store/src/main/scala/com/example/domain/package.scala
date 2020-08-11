@@ -1,13 +1,7 @@
 package com.example
 
+import zio.Has
+
 package object domain {
-
-  case class Specialty(name: String)
-
-  case class Vet(
-      fistName: String,
-      lastName: String,
-      specalities: List[Specialty]
-    )
-
+  type VetRepository = Has[VetRepository.Service]
 }
