@@ -43,6 +43,30 @@ lazy val petclinicVetsStore = project
     name := "petclinic-vets-store",
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio-interop-cats" % "2.1.4.0",
+      "ch.qos.logback" % "logback-classic" % "1.2.3",
+      "io.grpc" % "grpc-netty" % grpcVersion,
+      "io.getquill" %% "quill-jdbc" % "3.5.2",
+      "org.tpolecat" %% "doobie-core" % "0.9.0",
+      "org.tpolecat" %% "doobie-h2" % "0.9.0",
+      "org.tpolecat" %% "doobie-quill" % "0.9.0",
+      "mysql" % "mysql-connector-java" % "8.0.21",
+      "dev.zio" %% "zio-test" % "1.0.0" % Test,
+      "dev.zio" %% "zio-test-sbt" % "1.0.0" % Test,
+      "com.dimafeng" %% "testcontainers-scala-core" % "0.38.1" % Test,
+      "com.dimafeng" %% "testcontainers-scala-mysql" % "0.38.1" % Test
+    ),
+    testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
+  )
+  .dependsOn(petclinicGrpcApi)
+
+lazy val petclinicVisitsStore = project
+  .in(file("petclinic-visits-store"))
+  .settings(commonSettings)
+  .settings(
+    name := "petclinic-visits-store",
+    libraryDependencies ++= Seq(
+      "dev.zio" %% "zio-interop-cats" % "2.1.4.0",
+      "ch.qos.logback" % "logback-classic" % "1.2.3",
       "io.grpc" % "grpc-netty" % grpcVersion,
       "io.getquill" %% "quill-jdbc" % "3.5.2",
       "org.tpolecat" %% "doobie-core" % "0.9.0",
