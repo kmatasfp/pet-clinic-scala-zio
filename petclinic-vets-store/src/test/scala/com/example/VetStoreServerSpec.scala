@@ -16,8 +16,8 @@ import zio.ZManaged
 
 object VetStoreServerSpec extends DefaultRunnableSpec {
 
-  private val mysqlC =
-    Task {
+  private val mysql = {
+    val acquire = Task {
 
       val mysql = MySQLContainer().configure { c =>
         c.withUsername("root")
@@ -32,72 +32,78 @@ object VetStoreServerSpec extends DefaultRunnableSpec {
       mysql
     }
 
-  def spec = suite("VetStoreServer")(
-    testM("should return list of Vets") {
+    val release = (m: MySQLContainer) => Task(m.close()).orDie
 
-      val beforeAll = for {
-        mc <- ZManaged.make(mysqlC)(m => Task(m.stop()).orDie)
-        fiber <- ZManaged
-          .make(
-            for {
-              _ <- TestSystem.putEnv("jdbc.driver.name", mc.driverClassName)
-              _ <- TestSystem.putEnv("jdbc.url", mc.jdbcUrl)
-              _ <- TestSystem.putEnv("db.user", mc.username)
-              _ <- TestSystem.putEnv("db.pass", mc.password)
-              f <- VetStoreServer.run(List.empty).forkDaemon
-            } yield {
-              f
-            }
-          )(_.interruptFork)
-      } yield {
-        fiber
-      }
+    ZManaged.make(acquire)(release)
+  }
 
-      beforeAll.use_ {
-        val vets = ZioVetStore.VetsStoreClient.getVets(GetVetsRequest()).map(_.vets)
+  private val server = (mc: MySQLContainer) => {
+    val acquire = for {
+      _ <- TestSystem.putEnv("jdbc.driver.name", mc.driverClassName)
+      _ <- TestSystem.putEnv("jdbc.url", mc.jdbcUrl)
+      _ <- TestSystem.putEnv("db.user", mc.username)
+      _ <- TestSystem.putEnv("db.pass", mc.password)
+      f <- VetStoreServer.run(List.empty).forkDaemon
+    } yield {
+      f
+    }
 
-        assertM(vets)(
-          hasSameElements(
-            List(
-              Vet(id = 1, firstName = "James", lastName = "Carter", specialties = List.empty),
-              Vet(
-                id = 2,
-                firstName = "Helen",
-                lastName = "Leary",
-                specialties = List(Specialty("radiology"))
-              ),
-              Vet(
-                id = 3,
-                firstName = "Linda",
-                lastName = "Douglas",
-                specialties = List(Specialty("surgery"), Specialty("dentistry"))
-              ),
-              Vet(
-                id = 4,
-                firstName = "Rafael",
-                lastName = "Ortega",
-                specialties = List(Specialty("surgery"))
-              ),
-              Vet(
-                id = 5,
-                firstName = "Henry",
-                lastName = "Stevens",
-                specialties = List(Specialty("radiology"))
-              ),
-              Vet(id = 6, firstName = "Sharon", lastName = "Jenkins", specialties = List.empty)
-            )
-          )
-        ).provideCustomLayer(
-            ZioVetStore
-              .VetsStoreClient
-              .live(
-                ZManagedChannel(
-                  ManagedChannelBuilder.forAddress("localhost", 9000).usePlaintext()
-                )
+    ZManaged.make(acquire)(_.interruptFork)
+  }
+
+  private val before = mysql.flatMap(server)
+
+  def spec =
+    suite("VetStoreServer")(
+      testM("should return list of Vets") {
+
+        before.use_ {
+
+          val vets = ZioVetStore.VetsStoreClient.getVets(GetVetsRequest()).map(_.vets)
+
+          assertM(vets)(
+            hasSameElements(
+              List(
+                Vet(id = 1, firstName = "James", lastName = "Carter", specialties = List.empty),
+                Vet(
+                  id = 2,
+                  firstName = "Helen",
+                  lastName = "Leary",
+                  specialties = List(Specialty("radiology"))
+                ),
+                Vet(
+                  id = 3,
+                  firstName = "Linda",
+                  lastName = "Douglas",
+                  specialties = List(Specialty("surgery"), Specialty("dentistry"))
+                ),
+                Vet(
+                  id = 4,
+                  firstName = "Rafael",
+                  lastName = "Ortega",
+                  specialties = List(Specialty("surgery"))
+                ),
+                Vet(
+                  id = 5,
+                  firstName = "Henry",
+                  lastName = "Stevens",
+                  specialties = List(Specialty("radiology"))
+                ),
+                Vet(id = 6, firstName = "Sharon", lastName = "Jenkins", specialties = List.empty)
               )
-          )
-          .eventually
-      }
-    } @@ timeout(15.seconds)
-  )
+            )
+          ).provideCustomLayer(
+              ZioVetStore
+                .VetsStoreClient
+                .live(
+                  ZManagedChannel(
+                    ManagedChannelBuilder.forAddress("localhost", 9000).usePlaintext()
+                  )
+                )
+            )
+            .eventually
+
+        }
+      } @@ timeout(15.seconds)
+    )
 }

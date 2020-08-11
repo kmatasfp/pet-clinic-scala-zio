@@ -17,8 +17,8 @@ import com.example.model.Specialty
 
 object VetDaoSpec extends DefaultRunnableSpec {
 
-  val mysql =
-    Task {
+  private val mysql = {
+    val acquire = Task {
 
       val mysql = MySQLContainer().configure { c =>
         c.withUsername("root")
@@ -33,10 +33,14 @@ object VetDaoSpec extends DefaultRunnableSpec {
       mysql
     }
 
+    val release = (m: MySQLContainer) => Task(m.close()).orDie
+
+    ZManaged.make(acquire)(release)
+  }
+
   def spec = suite("VetDao")(
     testM("should return vets and their specialities from mysql db") {
-      ZManaged
-        .make(mysql)(m => Task(m.stop()).orDie)
+      mysql
         .use(mysql =>
           assertM(VetDao.findAll)(
             Assertion.hasSameElements(

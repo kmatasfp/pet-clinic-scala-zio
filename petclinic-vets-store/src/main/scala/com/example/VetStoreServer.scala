@@ -11,7 +11,7 @@ import com.examples.proto.api.vet_store.{
 }
 import io.grpc.Status
 import scalapb.zio_grpc.{ ServerMain, ServiceList }
-import zio.{ system, ZEnv, ZIO }
+import zio.{ system, Has, IO, URLayer, ZEnv, ZIO }
 import zio.console.putStrLn
 import com.example.domain.VetRepository
 import com.example.model.VetDao
@@ -24,23 +24,30 @@ import scalapb.zio_grpc.ServerLayer
 import com.example.config.Configuration.DbConfig
 import com.example.model.DbTransactor
 
-object VetStoreService extends ZioVetStore.RVetsStore[ZEnv with VetRepository] {
-  def getVets(request: GetVetsRequest): ZIO[zio.ZEnv with VetRepository, Status, GetVetsResponse] =
-    VetRepository
-      .all
-      .map(vs =>
-        GetVetsResponse(vets =
-          vs.map(v =>
-            Vet(
-              id = v.id,
-              firstName = v.fistName,
-              lastName = v.lastName,
-              specialties = v.specalities.map(s => Specialty(name = s.name))
+object VetStoreService {
+
+  val live: URLayer[VetRepository, Has[ZioVetStore.VetsStore]] =
+    ZLayer.fromService(repository =>
+      new ZioVetStore.VetsStore {
+        def getVets(request: GetVetsRequest): IO[Status, GetVetsResponse] =
+          repository
+            .all
+            .map(vs =>
+              GetVetsResponse(vets =
+                vs.map(v =>
+                  Vet(
+                    id = v.id,
+                    firstName = v.fistName,
+                    lastName = v.lastName,
+                    specialties = v.specalities.map(s => Specialty(name = s.name))
+                  )
+                )
+              )
             )
-          )
-        )
-      )
-      .mapError(_ => Status.INTERNAL)
+            .mapError(_ => Status.INTERNAL)
+      }
+    )
+
 }
 
 object VetStoreServer extends zio.App {
@@ -51,7 +58,7 @@ object VetStoreServer extends zio.App {
   def builder = ServerBuilder.forPort(9000).addService(ProtoReflectionService.newInstance())
 
   val server =
-    ServerLayer.fromServiceLayer(builder)(VetStoreService.toLayer)
+    ServerLayer.fromServiceLayer(builder)(VetStoreService.live)
 
   val dbConf = ZLayer.fromEffect(
     ZIO
