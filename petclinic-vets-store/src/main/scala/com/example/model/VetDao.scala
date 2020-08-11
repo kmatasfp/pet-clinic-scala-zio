@@ -7,11 +7,8 @@ import doobie.util.transactor.Transactor
 import io.getquill._
 import io.getquill.idiom.Idiom
 import io.getquill.context.Context
-import io.getquill.context.sql.idiom.SqlIdiom
-import io.getquill.context.jdbc.JdbcContextBase
-import zio.{ Has, RIO, Task, ULayer, URLayer, ZLayer }
+import zio.{ Has, RIO, Ref, Task, URLayer, ZLayer }
 import zio.interop.catz._
-import zio.Ref
 
 final case class Specialty(id: Int, name: String)
 

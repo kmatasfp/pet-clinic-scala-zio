@@ -1,18 +1,17 @@
 package com.example
 
-import zio.duration._
-import zio.test._
-import Assertion.hasSameElements
-import zio.test.TestAspect._
-import zio.test.environment._
+import com.examples.proto.api.vet_store.{ GetVetsRequest, Specialty, Vet, ZioVetStore }
+import com.dimafeng.testcontainers.MySQLContainer
 import io.grpc.ManagedChannelBuilder
 import scalapb.zio_grpc.ZManagedChannel
-import com.examples.proto.api.vet_store.{ GetVetsRequest, Specialty, Vet, ZioVetStore }
-import zio.Task
-import com.dimafeng.testcontainers.MySQLContainer
+import zio.{ Task, ZManaged }
+import zio.test.Assertion.hasSameElements
+import zio.test.TestAspect._
+import zio.test.environment._
+import zio.duration._
+import zio.test._
 
 import scala.jdk.CollectionConverters._
-import zio.ZManaged
 
 object VetStoreServerSpec extends DefaultRunnableSpec {
 

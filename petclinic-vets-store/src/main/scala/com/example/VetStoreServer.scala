@@ -2,6 +2,10 @@ package com.example
 
 import cats.syntax.apply._
 import cats.instances.option._
+import com.example.config.Configuration.DbConfig
+import com.example.domain.VetRepository
+import com.example.model.VetDao
+import com.example.model.DbTransactor
 import com.examples.proto.api.vet_store.{
   GetVetsRequest,
   GetVetsResponse,
@@ -10,19 +14,11 @@ import com.examples.proto.api.vet_store.{
   ZioVetStore
 }
 import io.grpc.Status
-import scalapb.zio_grpc.{ ServerMain, ServiceList }
-import zio.{ system, Has, IO, URLayer, ZEnv, ZIO }
-import zio.console.putStrLn
-import com.example.domain.VetRepository
-import com.example.model.VetDao
-import zio.ZLayer
-import zio.Ref
-import zio.ExitCode
 import io.grpc.ServerBuilder
 import io.grpc.protobuf.services.ProtoReflectionService
 import scalapb.zio_grpc.ServerLayer
-import com.example.config.Configuration.DbConfig
-import com.example.model.DbTransactor
+import zio.{ system, ExitCode, Has, IO, URLayer, ZEnv, ZIO, ZLayer }
+import zio.console.putStrLn
 
 object VetStoreService {
 
