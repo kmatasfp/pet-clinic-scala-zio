@@ -6,13 +6,15 @@ import com.dimafeng.testcontainers.MySQLContainer
 import com.example.model.{ DbTransactor, Visit, VisitDao }
 import com.example.config.Configuration.DbConfig
 import zio.test._
+import zio.test.Assertion._
 import zio.test.DefaultRunnableSpec
 import zio.{ Task, ZLayer, ZManaged }
 
 import scala.jdk.CollectionConverters._
 
 object VisitDaoSpec extends DefaultRunnableSpec {
-  private val mysql = {
+
+  private val mysqlC = {
     val acquire = Task {
 
       val mysql = MySQLContainer().configure { c =>
@@ -33,25 +35,25 @@ object VisitDaoSpec extends DefaultRunnableSpec {
     ZManaged.make(acquire)(release)
   }
 
-  def spec = suite("VisitDao")(
+  def spec = suite("VisitDao.mySql")(
     testM("should return visits from mysql db") {
-      mysql
+      mysqlC
         .use {
           mysql =>
             assertM(VisitDao.findByPetId(7))(
-              Assertion.hasSameElements(
+              hasSameElements(
                 List(
                   Visit(
-                    id = Some(1),
+                    id = 1,
                     petId = 7,
-                    date = LocalDate.of(2010, 3, 4),
-                    descripion = "rabies shot"
+                    visitDate = LocalDate.of(2010, 3, 4),
+                    description = "rabies shot"
                   ),
                   Visit(
-                    id = Some(4),
+                    id = 4,
                     petId = 7,
-                    date = LocalDate.of(2008, 9, 4),
-                    descripion = "spayed"
+                    visitDate = LocalDate.of(2008, 9, 4),
+                    description = "spayed"
                   )
                 )
               )
@@ -60,6 +62,47 @@ object VisitDaoSpec extends DefaultRunnableSpec {
                 DbConfig(mysql.driverClassName, mysql.jdbcUrl, mysql.username, mysql.password)
               ) >>> DbTransactor.live >>> VisitDao.mySql
             )
+        }
+    },
+    testM("should insert visit to mysql db") {
+      mysqlC
+        .use {
+          mysql =>
+            VisitDao
+              .save(
+                Visit(petId = 7, visitDate = LocalDate.of(2020, 8, 19), description = "checkup")
+              )
+              .flatMap(v =>
+                assertM(VisitDao.findByPetId(v.petId))(
+                  hasSameElements(
+                    List(
+                      Visit(
+                        id = 1,
+                        petId = 7,
+                        visitDate = LocalDate.of(2010, 3, 4),
+                        description = "rabies shot"
+                      ),
+                      Visit(
+                        id = 4,
+                        petId = 7,
+                        visitDate = LocalDate.of(2008, 9, 4),
+                        description = "spayed"
+                      ),
+                      Visit(
+                        id = v.id,
+                        petId = 7,
+                        visitDate = LocalDate.of(2020, 8, 19),
+                        description = "checkup"
+                      )
+                    )
+                  )
+                )
+              )
+              .provideCustomLayer(
+                ZLayer.succeed(
+                  DbConfig(mysql.driverClassName, mysql.jdbcUrl, mysql.username, mysql.password)
+                ) >>> DbTransactor.live >>> VisitDao.mySql
+              )
         }
     }
   )

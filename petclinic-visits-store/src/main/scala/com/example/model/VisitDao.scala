@@ -7,16 +7,14 @@ import doobie.implicits._
 import doobie.quill.DoobieContext
 import doobie.util.transactor.Transactor
 import io.getquill._
-import io.getquill.idiom.Idiom
-import io.getquill.context.Context
-import zio.{ Has, RIO, Ref, Task, URLayer, ZLayer }
+import zio.{ Has, RIO, Task, URLayer, ZLayer }
 import zio.interop.catz._
 
 case class Visit(
-    id: Option[Int],
+    id: Int = 0,
     petId: Int,
-    date: LocalDate,
-    descripion: String
+    visitDate: LocalDate,
+    description: String
   )
 
 object VisitDao {
@@ -29,9 +27,21 @@ object VisitDao {
 
   val mySql: URLayer[DbTransactor, VisitDao] = ZLayer.fromService(resource =>
     new VisitDao.Service {
-      def save(v: Visit): Task[Visit] = ???
 
-      def findByPetId(petId: Int): Task[List[Visit]] = ???
+      private val dc = new DoobieContext.MySQL[SnakeCase](SnakeCase)
+
+      import dc._
+
+      private val visits = quote(querySchema[Visit]("visits"))
+
+      def save(v: Visit): Task[Visit] =
+        dc.run(quote(visits.insert(lift(v)).returningGenerated(_.id)))
+          .transact(resource.xa)
+          .map(id => v.copy(id = id))
+
+      def findByPetId(petId: Int): Task[List[Visit]] =
+        dc.run(visits.filter(v => v.petId == lift(petId))).transact(resource.xa)
+
     }
   )
 

@@ -5,8 +5,6 @@ import doobie.implicits._
 import doobie.quill.DoobieContext
 import doobie.util.transactor.Transactor
 import io.getquill._
-import io.getquill.idiom.Idiom
-import io.getquill.context.Context
 import zio.{ Has, RIO, Ref, Task, URLayer, ZLayer }
 import zio.interop.catz._
 
@@ -28,16 +26,31 @@ object VetDao {
 
   val mySql: URLayer[DbTransactor, VetDao] = ZLayer.fromService(resource =>
     new VetDao.Service {
-      def findAll: zio.Task[List[(Vet, Option[Specialty])]] = {
 
-        val dc = new DoobieContext.MySQL[SnakeCase](SnakeCase)
-          with DbQueries[MySQLDialect, SnakeCase]
+      private val dc = new DoobieContext.MySQL[SnakeCase](SnakeCase)
 
-        import dc._
+      import dc._
 
-        dc.run(all).transact(resource.xa)
+      private val vets = quote(querySchema[Vet]("vets"))
 
-      }
+      private val vetSpecialities = quote(querySchema[VetSpecialty]("vet_specialties"))
+
+      private val specialties = quote(querySchema[Specialty]("specialties"))
+
+      def findAll: zio.Task[List[(Vet, Option[Specialty])]] =
+        dc.run(
+            quote {
+              for {
+                v <- vets
+                vs <- vetSpecialities.leftJoin(_.vetId == v.id)
+                s <- specialties.leftJoin(s => vs.exists(_.specialtyId == s.id))
+              } yield {
+                (v, s)
+              }
+            }
+          )
+          .transact(resource.xa)
+
     }
   )
 
@@ -50,25 +63,6 @@ object VetDao {
 
   def findAll: RIO[VetDao, List[(Vet, Option[Specialty])]] =
     RIO.accessM(_.get.findAll)
-}
-
-trait DbQueries[I <: Idiom, N <: NamingStrategy] { this: Context[I, N] =>
-
-  private val vets = quote(querySchema[Vet]("vets"))
-
-  private val vetSpecialities = quote(querySchema[VetSpecialty]("vet_specialties"))
-
-  private val specialties = quote(querySchema[Specialty]("specialties"))
-
-  val all = quote {
-    for {
-      v <- vets
-      vs <- vetSpecialities.leftJoin(_.vetId == v.id)
-      s <- specialties.leftJoin(s => vs.exists(_.specialtyId == s.id))
-    } yield {
-      (v, s)
-    }
-  }
 }
 
 object DbTransactor {

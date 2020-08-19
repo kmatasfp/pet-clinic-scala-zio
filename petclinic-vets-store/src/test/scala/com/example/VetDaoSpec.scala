@@ -32,7 +32,7 @@ object VetDaoSpec extends DefaultRunnableSpec {
     ZManaged.make(acquire)(release)
   }
 
-  def spec = suite("VetDao")(
+  def spec = suite("VetDao.mySql")(
     testM("should return vets and their specialities from mysql db") {
       mysql
         .use(mysql =>
