@@ -36,7 +36,7 @@ object VisitDaoSpec extends DefaultRunnableSpec {
   }
 
   def spec = suite("VisitDao.mySql")(
-    testM("should return visits from mysql db") {
+    testM("should return visits for a pet from mysql db") {
       mysqlC
         .use {
           mysql =>
@@ -54,6 +54,46 @@ object VisitDaoSpec extends DefaultRunnableSpec {
                     petId = 7,
                     visitDate = LocalDate.of(2008, 9, 4),
                     description = "spayed"
+                  )
+                )
+              )
+            ).provideCustomLayer(
+              ZLayer.succeed(
+                DbConfig(mysql.driverClassName, mysql.jdbcUrl, mysql.username, mysql.password)
+              ) >>> DbTransactor.live >>> VisitDao.mySql
+            )
+        }
+    },
+    testM("should return visits for pets from mysql db") {
+      mysqlC
+        .use {
+          mysql =>
+            assertM(VisitDao.findByPetIdIn(List(7, 8)))(
+              hasSameElements(
+                List(
+                  Visit(
+                    id = 1,
+                    petId = 7,
+                    visitDate = LocalDate.of(2010, 3, 4),
+                    description = "rabies shot"
+                  ),
+                  Visit(
+                    id = 4,
+                    petId = 7,
+                    visitDate = LocalDate.of(2008, 9, 4),
+                    description = "spayed"
+                  ),
+                  Visit(
+                    id = 2,
+                    petId = 8,
+                    visitDate = LocalDate.of(2011, 3, 4),
+                    description = "rabies shot"
+                  ),
+                  Visit(
+                    id = 3,
+                    petId = 8,
+                    visitDate = LocalDate.of(2009, 6, 4),
+                    description = "neutered"
                   )
                 )
               )

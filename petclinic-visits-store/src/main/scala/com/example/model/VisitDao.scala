@@ -23,6 +23,8 @@ object VisitDao {
     def save(v: Visit): Task[Visit]
 
     def findByPetId(petid: Int): Task[List[Visit]]
+
+    def findByPetIdIn(petIds: List[Int]): Task[List[Visit]]
   }
 
   val mySql: URLayer[DbTransactor, VisitDao] = ZLayer.fromService(resource =>
@@ -42,6 +44,9 @@ object VisitDao {
       def findByPetId(petId: Int): Task[List[Visit]] =
         dc.run(visits.filter(v => v.petId == lift(petId))).transact(resource.xa)
 
+      def findByPetIdIn(petIds: List[Int]): zio.Task[List[Visit]] =
+        dc.run(visits.filter(v => liftQuery(petIds).contains(v.petId))).transact(resource.xa)
+
     }
   )
 
@@ -50,6 +55,9 @@ object VisitDao {
 
   def findByPetId(petId: Int): RIO[VisitDao, List[Visit]] =
     RIO.accessM(_.get.findByPetId(petId))
+
+  def findByPetIdIn(petIds: List[Int]): RIO[VisitDao, List[Visit]] =
+    RIO.accessM(_.get.findByPetIdIn(petIds))
 
 }
 
