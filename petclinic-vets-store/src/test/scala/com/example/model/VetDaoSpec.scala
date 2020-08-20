@@ -1,4 +1,4 @@
-package com.example
+package com.example.model
 
 import com.dimafeng.testcontainers.MySQLContainer
 import com.example.model.{ DbTransactor, Specialty, Vet, VetDao }

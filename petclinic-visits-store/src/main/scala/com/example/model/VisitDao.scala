@@ -24,7 +24,7 @@ object VisitDao {
 
     def findByPetId(petid: Int): Task[List[Visit]]
 
-    def findByPetIdIn(petIds: List[Int]): Task[List[Visit]]
+    def findByPetIdIn(petIds: Seq[Int]): Task[List[Visit]]
   }
 
   val mySql: URLayer[DbTransactor, VisitDao] = ZLayer.fromService(resource =>
@@ -44,7 +44,7 @@ object VisitDao {
       def findByPetId(petId: Int): Task[List[Visit]] =
         dc.run(visits.filter(v => v.petId == lift(petId))).transact(resource.xa)
 
-      def findByPetIdIn(petIds: List[Int]): zio.Task[List[Visit]] =
+      def findByPetIdIn(petIds: Seq[Int]): zio.Task[List[Visit]] =
         dc.run(visits.filter(v => liftQuery(petIds).contains(v.petId))).transact(resource.xa)
 
     }

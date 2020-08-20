@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option java_package = "com.examples.proto.api";
+option java_multiple_files = true;
+option java_outer_classname = "VisitStoreProto";
+
+package visitstore;
+
+message GetVisitsForPetRequest { uint32 pet_id = 1; }
+
+message GetVisitsForPetsRequest { repeated uint32 pet_ids = 1; }
+
+message Visit {
+  uint32 id = 1;
+  uint32 pet_id = 2;
+  google.protobuf.Timestamp visit_date = 3;
+  string description = 4;
+}
+
+message GetVisitsResponse { repeated Visit visits = 1; }
+
+service VisitsStore {
+  rpc GetVisitsForPet(GetVisitsForPetRequest) returns (GetVisitsResponse) {}
+  rpc GetVisitsForPets(GetVisitsForPetsRequest) returns (GetVisitsResponse) {}
+}
