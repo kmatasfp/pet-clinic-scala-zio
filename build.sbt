@@ -27,11 +27,15 @@ lazy val petclinicGrpcApi = project
   .settings(
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio" % "1.0.1",
+      "io.grpc" % "grpc-netty" % grpcVersion,
       "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb
         .compiler
         .Version
-        .scalapbVersion % "protobuf",
-      "io.grpc" % "grpc-netty" % grpcVersion
+        .scalapbVersion,
+      "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb
+        .compiler
+        .Version
+        .scalapbVersion % "protobuf"
     ),
     PB.targets in Compile := Seq(
       scalapb.gen(grpc = true) -> (sourceManaged in Compile).value,
