@@ -19,7 +19,7 @@ lazy val commonSettings = Seq(
   )
 )
 
-val grpcVersion = "1.30.2"
+val grpcVersion = "1.31.1"
 
 lazy val petclinicGrpcApi = project
   .in(file("proto"))
@@ -27,7 +27,11 @@ lazy val petclinicGrpcApi = project
   .settings(
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio" % "1.0.1",
-      "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
+      "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb
+        .compiler
+        .Version
+        .scalapbVersion % "protobuf",
+      "io.grpc" % "grpc-netty" % grpcVersion
     ),
     PB.targets in Compile := Seq(
       scalapb.gen(grpc = true) -> (sourceManaged in Compile).value,
@@ -44,7 +48,6 @@ lazy val petclinicVetsStore = project
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio-interop-cats" % "2.1.4.0",
       "ch.qos.logback" % "logback-classic" % "1.2.3",
-      "io.grpc" % "grpc-netty" % grpcVersion,
       "io.getquill" %% "quill-jdbc" % "3.5.2",
       "org.tpolecat" %% "doobie-core" % "0.9.0",
       "org.tpolecat" %% "doobie-h2" % "0.9.0",
@@ -67,7 +70,6 @@ lazy val petclinicVisitsStore = project
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio-interop-cats" % "2.1.4.0",
       "ch.qos.logback" % "logback-classic" % "1.2.3",
-      "io.grpc" % "grpc-netty" % grpcVersion,
       "io.getquill" %% "quill-jdbc" % "3.5.2",
       "org.tpolecat" %% "doobie-core" % "0.9.0",
       "org.tpolecat" %% "doobie-h2" % "0.9.0",
