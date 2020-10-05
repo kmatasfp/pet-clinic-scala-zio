@@ -36,27 +36,29 @@ object VetStoreServerSpec extends DefaultRunnableSpec {
     ZManaged.make(acquire)(release)
   }
 
-  private val server = (mc: MySQLContainer) => {
-    val acquire = for {
-      _ <- TestSystem.putEnv("jdbc.driver.name", mc.driverClassName)
-      _ <- TestSystem.putEnv("jdbc.url", mc.jdbcUrl)
-      _ <- TestSystem.putEnv("db.user", mc.username)
-      _ <- TestSystem.putEnv("db.pass", mc.password)
-      f <- VetStoreServer.run(List.empty).forkDaemon
-    } yield {
-      f
+  private val server = (port: Int) =>
+    (mc: MySQLContainer) => {
+      val acquire = for {
+        _ <- TestSystem.putEnv("jdbc.driver.name", mc.driverClassName)
+        _ <- TestSystem.putEnv("jdbc.url", mc.jdbcUrl)
+        _ <- TestSystem.putEnv("db.user", mc.username)
+        _ <- TestSystem.putEnv("db.pass", mc.password)
+        _ <- TestSystem.putEnv("server.port", port.toString())
+        f <- VetStoreServer.run(List.empty).forkDaemon
+      } yield {
+        f
+      }
+
+      ZManaged.make(acquire)(_.interruptFork)
     }
 
-    ZManaged.make(acquire)(_.interruptFork)
-  }
-
-  private val before = mysql.flatMap(server)
+  private val before = (port: Int) => mysql.flatMap(server(port))
 
   def spec =
     suite("VetStoreServer")(
       testM("should return list of Vets") {
 
-        before.use_ {
+        before(9000).use_ {
 
           val vets = ZioVetStore.VetsStoreClient.getVets(GetVetsRequest()).map(_.vets)
 
@@ -103,6 +105,6 @@ object VetStoreServerSpec extends DefaultRunnableSpec {
             .eventually
 
         }
-      } @@ timeout(15.seconds)
+      } @@ timeout(25.seconds)
     )
 }

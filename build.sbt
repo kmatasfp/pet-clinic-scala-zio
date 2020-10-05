@@ -1,6 +1,6 @@
 lazy val commonSettings = Seq(
   version := "1.0.0",
-  organization := "com.example",
+  organization := "com.example.petclinic",
   scalaVersion := "2.13.3",
   scalacOptions ++= Seq(
     "-explaintypes",
@@ -45,10 +45,10 @@ lazy val petclinicGrpcApi = project
   )
 
 lazy val petclinicVetsStore = project
-  .in(file("petclinic-vets-store"))
+  .in(file("vets-service"))
   .settings(commonSettings)
   .settings(
-    name := "petclinic-vets-store",
+    name := "vets-service",
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio-interop-cats" % "2.1.4.0",
       "ch.qos.logback" % "logback-classic" % "1.2.3",
@@ -67,10 +67,10 @@ lazy val petclinicVetsStore = project
   .dependsOn(petclinicGrpcApi)
 
 lazy val petclinicVisitsStore = project
-  .in(file("petclinic-visits-store"))
+  .in(file("visits-service"))
   .settings(commonSettings)
   .settings(
-    name := "petclinic-visits-store",
+    name := "visits-service",
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio-interop-cats" % "2.1.4.0",
       "ch.qos.logback" % "logback-classic" % "1.2.3",

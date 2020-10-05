@@ -66,7 +66,7 @@ object VisitStoreServer extends zio.App {
   def welcome: ZIO[ZEnv, Throwable, Unit] =
     putStrLn("Server is running. Press Ctrl-C to stop.")
 
-  val app = system.envOrElse("server.port", "9000").map(_.toInt).map { port =>
+  val app = system.envOrElse("server.port", "9001").map(_.toInt).map { port =>
     val builder = ServerBuilder.forPort(port).addService(ProtoReflectionService.newInstance())
 
     val server =
@@ -85,6 +85,7 @@ object VisitStoreServer extends zio.App {
 
     ((dbConf >>> DbTransactor.live >>> VisitDao.mySql) ++ ZEnv.any) >>> server
   }
+
   def run(args: List[String]): zio.URIO[zio.ZEnv, ExitCode] =
     (welcome *> app.flatMap(_.build.useForever)).exitCode
 }

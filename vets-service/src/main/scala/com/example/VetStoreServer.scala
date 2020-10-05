@@ -51,25 +51,26 @@ object VetStoreServer extends zio.App {
   def welcome: ZIO[ZEnv, Throwable, Unit] =
     putStrLn("Server is running. Press Ctrl-C to stop.")
 
-  def builder = ServerBuilder.forPort(9000).addService(ProtoReflectionService.newInstance())
+  val app = system.envOrElse("server.port", "9000").map(_.toInt).map { port =>
+    def builder = ServerBuilder.forPort(port).addService(ProtoReflectionService.newInstance())
 
-  val server =
-    ServerLayer.fromServiceLayer(builder)(VetStoreService.live)
+    val server =
+      ServerLayer.fromServiceLayer(builder)(VetStoreService.live)
 
-  val dbConf = ZLayer.fromEffect(
-    ZIO
-      .mapN(
-        system.env("jdbc.driver.name"),
-        system.env("jdbc.url"),
-        system.env("db.user"),
-        system.env("db.pass")
-      )((_, _, _, _).mapN(DbConfig))
-      .someOrFail(new NoSuchElementException)
-  )
+    val dbConf = ZLayer.fromEffect(
+      ZIO
+        .mapN(
+          system.env("jdbc.driver.name"),
+          system.env("jdbc.url"),
+          system.env("db.user"),
+          system.env("db.pass")
+        )((_, _, _, _).mapN(DbConfig))
+        .someOrFail(new NoSuchElementException)
+    )
 
-  val app =
     ((dbConf >>> DbTransactor.live >>> VetDao.mySql >>> VetRepository.live) ++ ZEnv.any) >>> server
+  }
 
   def run(args: List[String]): zio.URIO[zio.ZEnv, ExitCode] =
-    (welcome *> app.build.useForever).exitCode
+    (welcome *> app.flatMap(_.build.useForever)).exitCode
 }

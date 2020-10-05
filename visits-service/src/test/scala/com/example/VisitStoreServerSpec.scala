@@ -61,7 +61,7 @@ object VisitStoreServerSpec extends DefaultRunnableSpec {
   def spec =
     suite("VisitStoreServer")(
       testM("should return visits for a pet")(
-        before(9000).use_ {
+        before(9001).use_ {
           val visits = ZioVisitStore
             .VisitsStoreClient
             .getVisitsForPet(GetVisitsForPetRequest(petId = 7))
@@ -89,7 +89,7 @@ object VisitStoreServerSpec extends DefaultRunnableSpec {
                 .VisitsStoreClient
                 .live(
                   ZManagedChannel(
-                    ManagedChannelBuilder.forAddress("localhost", 9000).usePlaintext()
+                    ManagedChannelBuilder.forAddress("localhost", 9001).usePlaintext()
                   )
                 )
             )
@@ -97,7 +97,7 @@ object VisitStoreServerSpec extends DefaultRunnableSpec {
         }
       ) @@ timeout(25.seconds),
       testM("should return visits for a pets")(
-        before(9001).use_ {
+        before(9002).use_ {
           val visits = ZioVisitStore
             .VisitsStoreClient
             .getVisitsForPets(GetVisitsForPetsRequest(petIds = List(7, 8)))
@@ -137,7 +137,7 @@ object VisitStoreServerSpec extends DefaultRunnableSpec {
                 .VisitsStoreClient
                 .live(
                   ZManagedChannel(
-                    ManagedChannelBuilder.forAddress("localhost", 9001).usePlaintext()
+                    ManagedChannelBuilder.forAddress("localhost", 9002).usePlaintext()
                   )
                 )
             )
