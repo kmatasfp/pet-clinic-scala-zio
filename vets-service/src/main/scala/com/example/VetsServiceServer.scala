@@ -6,12 +6,12 @@ import com.example.config.Configuration.DbConfig
 import com.example.domain.VetRepository
 import com.example.model.VetDao
 import com.example.model.DbTransactor
-import com.examples.proto.api.vet_store.{
+import com.examples.proto.api.vets_service.{
   GetVetsRequest,
   GetVetsResponse,
   Specialty,
   Vet,
-  ZioVetStore
+  ZioVetsService
 }
 import io.grpc.Status
 import io.grpc.ServerBuilder
@@ -20,11 +20,11 @@ import scalapb.zio_grpc.ServerLayer
 import zio.{ system, ExitCode, Has, IO, URLayer, ZEnv, ZIO, ZLayer }
 import zio.console.putStrLn
 
-object VetStoreService {
+object VetsService {
 
-  val live: URLayer[VetRepository, Has[ZioVetStore.VetsStore]] =
+  val live: URLayer[VetRepository, Has[ZioVetsService.Vets]] =
     ZLayer.fromService(repository =>
-      new ZioVetStore.VetsStore {
+      new ZioVetsService.Vets {
         def getVets(request: GetVetsRequest): IO[Status, GetVetsResponse] =
           repository
             .all
@@ -46,7 +46,7 @@ object VetStoreService {
 
 }
 
-object VetStoreServer extends zio.App {
+object VetsServiceServer extends zio.App {
 
   def welcome: ZIO[ZEnv, Throwable, Unit] =
     putStrLn("Server is running. Press Ctrl-C to stop.")
@@ -55,7 +55,7 @@ object VetStoreServer extends zio.App {
     def builder = ServerBuilder.forPort(port).addService(ProtoReflectionService.newInstance())
 
     val server =
-      ServerLayer.fromServiceLayer(builder)(VetStoreService.live)
+      ServerLayer.fromServiceLayer(builder)(VetsService.live)
 
     val dbConf = ZLayer.fromEffect(
       ZIO

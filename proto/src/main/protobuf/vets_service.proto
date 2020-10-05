@@ -2,9 +2,9 @@ syntax = "proto3";
 
 option java_package = "com.examples.proto.api";
 option java_multiple_files = true;
-option java_outer_classname = "VetStoreProto";
+option java_outer_classname = "VetsServiceProto";
 
-package vetstore;
+package vetsservice;
 
 message GetVetsRequest {}
 
@@ -19,6 +19,6 @@ message Vet {
 
 message GetVetsResponse { repeated Vet vets = 1; }
 
-service VetsStore {
+service Vets {
   rpc GetVets(GetVetsRequest) returns (GetVetsResponse) {}
 }

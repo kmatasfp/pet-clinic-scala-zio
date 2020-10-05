@@ -1,6 +1,6 @@
 package com.example
 
-import com.examples.proto.api.vet_store.{ GetVetsRequest, Specialty, Vet, ZioVetStore }
+import com.examples.proto.api.vets_service.{ GetVetsRequest, Specialty, Vet, ZioVetsService }
 import com.dimafeng.testcontainers.MySQLContainer
 import io.grpc.ManagedChannelBuilder
 import scalapb.zio_grpc.ZManagedChannel
@@ -13,7 +13,7 @@ import zio.test._
 
 import scala.jdk.CollectionConverters._
 
-object VetStoreServerSpec extends DefaultRunnableSpec {
+object VetsServiceSpec extends DefaultRunnableSpec {
 
   private val mysql = {
     val acquire = Task {
@@ -44,7 +44,7 @@ object VetStoreServerSpec extends DefaultRunnableSpec {
         _ <- TestSystem.putEnv("db.user", mc.username)
         _ <- TestSystem.putEnv("db.pass", mc.password)
         _ <- TestSystem.putEnv("server.port", port.toString())
-        f <- VetStoreServer.run(List.empty).forkDaemon
+        f <- VetsServiceServer.run(List.empty).forkDaemon
       } yield {
         f
       }
@@ -55,12 +55,12 @@ object VetStoreServerSpec extends DefaultRunnableSpec {
   private val before = (port: Int) => mysql.flatMap(server(port))
 
   def spec =
-    suite("VetStoreServer")(
+    suite("VetsService")(
       testM("should return list of Vets") {
 
         before(9000).use_ {
 
-          val vets = ZioVetStore.VetsStoreClient.getVets(GetVetsRequest()).map(_.vets)
+          val vets = ZioVetsService.VetsClient.getVets(GetVetsRequest()).map(_.vets)
 
           assertM(vets)(
             hasSameElements(
@@ -94,8 +94,8 @@ object VetStoreServerSpec extends DefaultRunnableSpec {
               )
             )
           ).provideCustomLayer(
-              ZioVetStore
-                .VetsStoreClient
+              ZioVetsService
+                .VetsClient
                 .live(
                   ZManagedChannel(
                     ManagedChannelBuilder.forAddress("localhost", 9000).usePlaintext()

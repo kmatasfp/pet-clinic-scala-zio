@@ -9,22 +9,24 @@ import io.grpc.protobuf.services.ProtoReflectionService
 import scalapb.zio_grpc.ServerLayer
 import zio.{ system, ExitCode, Has, IO, URLayer, ZEnv, ZIO, ZLayer }
 import zio.console.putStrLn
-import com.examples.proto.api.visit_store.ZioVisitStore
-import com.examples.proto.api.visit_store.GetVisitsForPetRequest
-import com.examples.proto.api.visit_store.GetVisitsForPetsRequest
-import com.examples.proto.api.visit_store.GetVisitsResponse
-import com.examples.proto.api.visit_store.Visit
+import com.examples.proto.api.visits_service.{
+  GetVisitsForPetRequest,
+  GetVisitsForPetsRequest,
+  GetVisitsResponse,
+  Visit,
+  ZioVisitsService
+}
 import com.google.protobuf.timestamp.Timestamp
 import java.time.LocalTime
 import java.time.ZoneOffset
 import com.example.config.Configuration.DbConfig
 import com.example.model.DbTransactor
 
-object VisitStoreService {
+object VisitsService {
 
-  val live: URLayer[VisitDao, Has[ZioVisitStore.VisitsStore]] =
+  val live: URLayer[VisitDao, Has[ZioVisitsService.Visits]] =
     ZLayer.fromService(dao =>
-      new ZioVisitStore.VisitsStore {
+      new ZioVisitsService.Visits {
         def getVisitsForPet(request: GetVisitsForPetRequest): IO[Status, GetVisitsResponse] =
           dao
             .findByPetId(request.petId)
@@ -61,7 +63,7 @@ object VisitStoreService {
     )
 }
 
-object VisitStoreServer extends zio.App {
+object VisitsServiceServer extends zio.App {
 
   def welcome: ZIO[ZEnv, Throwable, Unit] =
     putStrLn("Server is running. Press Ctrl-C to stop.")
@@ -70,7 +72,7 @@ object VisitStoreServer extends zio.App {
     val builder = ServerBuilder.forPort(port).addService(ProtoReflectionService.newInstance())
 
     val server =
-      ServerLayer.fromServiceLayer(builder)(VisitStoreService.live)
+      ServerLayer.fromServiceLayer(builder)(VisitsService.live)
 
     val dbConf = ZLayer.fromEffect(
       ZIO

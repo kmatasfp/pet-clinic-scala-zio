@@ -1,5 +1,12 @@
 package com.example
 
+import com.examples.proto.api.visits_service.{
+  GetVisitsForPetRequest,
+  GetVisitsForPetsRequest,
+  Visit,
+  ZioVisitsService
+}
+import com.google.protobuf.timestamp.Timestamp
 import com.dimafeng.testcontainers.MySQLContainer
 import io.grpc.ManagedChannelBuilder
 import scalapb.zio_grpc.ZManagedChannel
@@ -11,13 +18,8 @@ import zio.duration._
 import zio.test._
 
 import scala.jdk.CollectionConverters._
-import com.examples.proto.api.visit_store.ZioVisitStore
-import com.examples.proto.api.visit_store.GetVisitsForPetRequest
-import com.examples.proto.api.visit_store.Visit
-import com.google.protobuf.timestamp.Timestamp
-import com.examples.proto.api.visit_store.GetVisitsForPetsRequest
 
-object VisitStoreServerSpec extends DefaultRunnableSpec {
+object VisitsServiceSpec extends DefaultRunnableSpec {
 
   private val mysql = {
     val acquire = Task {
@@ -48,7 +50,7 @@ object VisitStoreServerSpec extends DefaultRunnableSpec {
         _ <- TestSystem.putEnv("db.user", mc.username)
         _ <- TestSystem.putEnv("db.pass", mc.password)
         _ <- TestSystem.putEnv("server.port", port.toString())
-        f <- VisitStoreServer.run(List.empty).forkDaemon
+        f <- VisitsServiceServer.run(List.empty).forkDaemon
       } yield {
         f
       }
@@ -59,11 +61,11 @@ object VisitStoreServerSpec extends DefaultRunnableSpec {
   private val before = (port: Int) => mysql.flatMap(server(port))
 
   def spec =
-    suite("VisitStoreServer")(
+    suite("VisitsService")(
       testM("should return visits for a pet")(
         before(9001).use_ {
-          val visits = ZioVisitStore
-            .VisitsStoreClient
+          val visits = ZioVisitsService
+            .VisitsClient
             .getVisitsForPet(GetVisitsForPetRequest(petId = 7))
             .map(_.visits)
 
@@ -85,8 +87,8 @@ object VisitStoreServerSpec extends DefaultRunnableSpec {
               )
             )
           ).provideCustomLayer(
-              ZioVisitStore
-                .VisitsStoreClient
+              ZioVisitsService
+                .VisitsClient
                 .live(
                   ZManagedChannel(
                     ManagedChannelBuilder.forAddress("localhost", 9001).usePlaintext()
@@ -98,8 +100,8 @@ object VisitStoreServerSpec extends DefaultRunnableSpec {
       ) @@ timeout(25.seconds),
       testM("should return visits for a pets")(
         before(9002).use_ {
-          val visits = ZioVisitStore
-            .VisitsStoreClient
+          val visits = ZioVisitsService
+            .VisitsClient
             .getVisitsForPets(GetVisitsForPetsRequest(petIds = List(7, 8)))
             .map(_.visits)
 
@@ -133,8 +135,8 @@ object VisitStoreServerSpec extends DefaultRunnableSpec {
               )
             )
           ).provideCustomLayer(
-              ZioVisitStore
-                .VisitsStoreClient
+              ZioVisitsService
+                .VisitsClient
                 .live(
                   ZManagedChannel(
                     ManagedChannelBuilder.forAddress("localhost", 9002).usePlaintext()

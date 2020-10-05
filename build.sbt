@@ -44,7 +44,7 @@ lazy val petclinicGrpcApi = project
     PB.protoSources in Compile := Seq(file("proto/src/main/protobuf"))
   )
 
-lazy val petclinicVetsStore = project
+lazy val petclinicVetsService = project
   .in(file("vets-service"))
   .settings(commonSettings)
   .settings(
@@ -66,7 +66,7 @@ lazy val petclinicVetsStore = project
   )
   .dependsOn(petclinicGrpcApi)
 
-lazy val petclinicVisitsStore = project
+lazy val petclinicVisitsService = project
   .in(file("visits-service"))
   .settings(commonSettings)
   .settings(
