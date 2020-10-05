@@ -9,7 +9,6 @@ import zio.test.TestAspect._
 import zio.test.environment._
 import zio.duration._
 import zio.test._
-import zio.console.putStrLn
 
 import scala.jdk.CollectionConverters._
 import com.examples.proto.api.visit_store.ZioVisitStore
