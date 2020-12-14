@@ -59,8 +59,9 @@ lazy val petclinicVetsService = project
       "mysql" % "mysql-connector-java" % "8.0.21",
       "dev.zio" %% "zio-test" % "1.0.1" % Test,
       "dev.zio" %% "zio-test-sbt" % "1.0.1" % Test,
-      "com.dimafeng" %% "testcontainers-scala-core" % "0.38.1" % Test,
-      "com.dimafeng" %% "testcontainers-scala-mysql" % "0.38.1" % Test
+      "com.dimafeng" %% "testcontainers-scala-core" % "0.38.7" % Test,
+      "com.dimafeng" %% "testcontainers-scala-mysql" % "0.38.7" % Test,
+      "org.testcontainers" % "testcontainers" % "1.15.1" % Test
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
   )
@@ -82,7 +83,8 @@ lazy val petclinicVisitsService = project
       "dev.zio" %% "zio-test" % "1.0.1" % Test,
       "dev.zio" %% "zio-test-sbt" % "1.0.1" % Test,
       "com.dimafeng" %% "testcontainers-scala-core" % "0.38.1" % Test,
-      "com.dimafeng" %% "testcontainers-scala-mysql" % "0.38.1" % Test
+      "com.dimafeng" %% "testcontainers-scala-mysql" % "0.38.1" % Test,
+      "org.testcontainers" % "testcontainers" % "1.15.1" % Test
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
   )
