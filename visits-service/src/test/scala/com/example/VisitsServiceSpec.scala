@@ -65,15 +65,9 @@ object VisitsServiceSpec extends DefaultRunnableSpec {
   def spec =
     suite("VisitsService")(
       testM("should return visits for a pet")(
-<<<<<<< HEAD:visits-service/src/test/scala/com/example/VisitsServiceSpec.scala
-        before(9001).use_ {
+        before(port(9001)).use_ {
           val visits = ZioVisitsService
             .VisitsClient
-=======
-        before(port(9001)).use_ {
-          val visits = ZioVisitStore
-            .VisitsStoreClient
->>>>>>> port management:petclinic-visits-store/src/test/scala/com/example/VisitStoreServerSpec.scala
             .getVisitsForPet(GetVisitsForPetRequest(petId = 7))
             .map(_.visits)
 
@@ -99,11 +93,7 @@ object VisitsServiceSpec extends DefaultRunnableSpec {
                 .VisitsClient
                 .live(
                   ZManagedChannel(
-<<<<<<< HEAD:visits-service/src/test/scala/com/example/VisitsServiceSpec.scala
-                    ManagedChannelBuilder.forAddress("localhost", 9001).usePlaintext()
-=======
                     ManagedChannelBuilder.forAddress("localhost", port(9001)).usePlaintext()
->>>>>>> port management:petclinic-visits-store/src/test/scala/com/example/VisitStoreServerSpec.scala
                   )
                 )
             )
@@ -111,15 +101,9 @@ object VisitsServiceSpec extends DefaultRunnableSpec {
         }
       ) @@ timeout(25.seconds),
       testM("should return visits for a pets")(
-<<<<<<< HEAD:visits-service/src/test/scala/com/example/VisitsServiceSpec.scala
-        before(9002).use_ {
+        before(port(9002)).use_ {
           val visits = ZioVisitsService
             .VisitsClient
-=======
-        before(port(9002)).use_ {
-          val visits = ZioVisitStore
-            .VisitsStoreClient
->>>>>>> port management:petclinic-visits-store/src/test/scala/com/example/VisitStoreServerSpec.scala
             .getVisitsForPets(GetVisitsForPetsRequest(petIds = List(7, 8)))
             .map(_.visits)
 
@@ -157,11 +141,7 @@ object VisitsServiceSpec extends DefaultRunnableSpec {
                 .VisitsClient
                 .live(
                   ZManagedChannel(
-<<<<<<< HEAD:visits-service/src/test/scala/com/example/VisitsServiceSpec.scala
-                    ManagedChannelBuilder.forAddress("localhost", 9002).usePlaintext()
-=======
                     ManagedChannelBuilder.forAddress("localhost", port(9002)).usePlaintext()
->>>>>>> port management:petclinic-visits-store/src/test/scala/com/example/VisitStoreServerSpec.scala
                   )
                 )
             )

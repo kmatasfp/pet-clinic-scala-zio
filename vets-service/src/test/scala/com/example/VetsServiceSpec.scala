@@ -44,18 +44,7 @@ object VetsServiceSpec extends DefaultRunnableSpec {
         _ <- TestSystem.putEnv("db.user", mc.username)
         _ <- TestSystem.putEnv("db.pass", mc.password)
         _ <- TestSystem.putEnv("server.port", port.toString())
-<<<<<<< HEAD:vets-service/src/test/scala/com/example/VetsServiceSpec.scala
         f <- VetsServiceServer.run(List.empty).forkDaemon
-      } yield {
-        f
-      }
-
-      ZManaged.make(acquire)(_.interruptFork)
-    }
-
-  private val before = (port: Int) => mysql.flatMap(server(port))
-=======
-        f <- VetStoreServer.run(List.empty).forkDaemon
       } yield {
         f
       }
@@ -66,17 +55,12 @@ object VetsServiceSpec extends DefaultRunnableSpec {
   private val before = (port: Int) => mysql.flatMap(server(port))
 
   private def port(p: Int) = p
->>>>>>> port management:petclinic-vets-store/src/test/scala/com/example/VetStoreServerSpec.scala
 
   def spec =
     suite("VetsService")(
       testM("should return list of Vets") {
 
-<<<<<<< HEAD:vets-service/src/test/scala/com/example/VetsServiceSpec.scala
-        before(9000).use_ {
-=======
         before(port(9000)).use_ {
->>>>>>> port management:petclinic-vets-store/src/test/scala/com/example/VetStoreServerSpec.scala
 
           val vets = ZioVetsService.VetsClient.getVets(GetVetsRequest()).map(_.vets)
 

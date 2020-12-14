@@ -52,17 +52,10 @@ object VetsServiceServer extends zio.App {
     putStrLn("Server is running. Press Ctrl-C to stop.")
 
   val app = system.envOrElse("server.port", "9000").map(_.toInt).map { port =>
-<<<<<<< HEAD:vets-service/src/main/scala/com/example/VetsServiceServer.scala
-    def builder = ServerBuilder.forPort(port).addService(ProtoReflectionService.newInstance())
-
-    val server =
-      ServerLayer.fromServiceLayer(builder)(VetsService.live)
-=======
     val builder = ServerBuilder.forPort(port).addService(ProtoReflectionService.newInstance())
 
     val server =
-      ServerLayer.fromServiceLayer(builder)(VetStoreService.live)
->>>>>>> port management:petclinic-vets-store/src/main/scala/com/example/VetStoreServer.scala
+      ServerLayer.fromServiceLayer(builder)(VetsService.live)
 
     val dbConf = ZLayer.fromEffect(
       ZIO
