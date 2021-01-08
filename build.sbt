@@ -7,7 +7,6 @@ lazy val commonSettings = Seq(
     "-deprecation",
     "-feature",
     "-Ywarn-dead-code",
-    "-Ywarn-numeric-widen",
     "-Wunused",
     "-Xlint:inaccessible",
     "-Xlint:infer-any",

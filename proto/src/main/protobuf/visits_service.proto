@@ -12,8 +12,10 @@ message GetVisitsForPetRequest { uint32 pet_id = 1; }
 
 message GetVisitsForPetsRequest { repeated uint32 pet_ids = 1; }
 
+message VisitId { uint32 value = 1; }
+
 message Visit {
-  uint32 id = 1;
+  VisitId id = 1;
   uint32 pet_id = 2;
   google.protobuf.Timestamp visit_date = 3;
   string description = 4;
@@ -21,7 +23,12 @@ message Visit {
 
 message GetVisitsResponse { repeated Visit visits = 1; }
 
+message CreateVisitRequest { Visit visit = 1; }
+
+message CreateVisitResponse { Visit visit = 1; }
+
 service Visits {
   rpc GetVisitsForPet(GetVisitsForPetRequest) returns (GetVisitsResponse) {}
   rpc GetVisitsForPets(GetVisitsForPetsRequest) returns (GetVisitsResponse) {}
+  rpc CreateVisit(CreateVisitRequest) returns (CreateVisitResponse) {}
 }

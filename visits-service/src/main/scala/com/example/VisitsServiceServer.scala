@@ -1,26 +1,36 @@
 package com.example
 
-import cats.syntax.apply._
-import cats.instances.option._
-import com.example.model.VisitDao
-import io.grpc.Status
-import io.grpc.ServerBuilder
-import io.grpc.protobuf.services.ProtoReflectionService
-import scalapb.zio_grpc.ServerLayer
-import zio.{ system, ExitCode, Has, IO, URLayer, ZEnv, ZIO, ZLayer }
-import zio.console.putStrLn
-import com.examples.proto.api.visits_service.{
-  GetVisitsForPetRequest,
-  GetVisitsForPetsRequest,
-  GetVisitsResponse,
-  Visit,
-  ZioVisitsService
-}
-import com.google.protobuf.timestamp.Timestamp
+import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneOffset
+
+import cats.instances.option._
+import cats.syntax.apply._
 import com.example.config.Configuration.DbConfig
 import com.example.model.DbTransactor
+import com.example.model.VisitDao
+import com.examples.proto.api.visits_service.CreateVisitRequest
+import com.examples.proto.api.visits_service.CreateVisitResponse
+import com.examples.proto.api.visits_service.GetVisitsForPetRequest
+import com.examples.proto.api.visits_service.GetVisitsForPetsRequest
+import com.examples.proto.api.visits_service.GetVisitsResponse
+import com.examples.proto.api.visits_service.Visit
+import com.examples.proto.api.visits_service.VisitId
+import com.examples.proto.api.visits_service.ZioVisitsService
+import com.google.protobuf.timestamp.Timestamp
+import io.grpc.ServerBuilder
+import io.grpc.Status
+import io.grpc.protobuf.services.ProtoReflectionService
+import scalapb.zio_grpc.ServerLayer
+import zio.ExitCode
+import zio.Has
+import zio.IO
+import zio.URLayer
+import zio.ZEnv
+import zio.ZIO
+import zio.ZLayer
+import zio.console.putStrLn
+import zio.system
 
 object VisitsService {
 
@@ -30,35 +40,62 @@ object VisitsService {
         def getVisitsForPet(request: GetVisitsForPetRequest): IO[Status, GetVisitsResponse] =
           dao
             .findByPetId(request.petId)
-            .map(createResponse)
+            .map(createGetVisitsResponse)
             .mapError(_ => Status.INTERNAL)
 
         def getVisitsForPets(request: GetVisitsForPetsRequest): IO[Status, GetVisitsResponse] =
           dao
             .findByPetIdIn(request.petIds)
-            .map(createResponse)
+            .map(createGetVisitsResponse)
             .mapError(_ => Status.INTERNAL)
 
-        private def createResponse(vs: List[com.example.model.Visit]) =
-          GetVisitsResponse(visits =
-            vs.map(v =>
-              Visit(
-                id = v.id,
-                petId = v.petId,
-                visitDate = Some(
-                  Timestamp.of(
-                    seconds = v
-                      .visitDate
-                      .atTime(LocalTime.MIDNIGHT)
-                      .atZone(ZoneOffset.UTC)
-                      .toEpochSecond(),
-                    nanos = 0
-                  )
-                ),
-                description = v.description
-              )
+        private val emptyCreateVisitResponse =
+          IO(CreateVisitResponse()).mapError(_ => Status.INTERNAL)
+
+        def createVisit(request: CreateVisitRequest): IO[Status, CreateVisitResponse] =
+          request
+            .visit
+            .fold(emptyCreateVisitResponse)(v =>
+              v.visitDate
+                .fold(emptyCreateVisitResponse)(t =>
+                  dao
+                    .save(
+                      model.Visit(
+                        petId = v.petId,
+                        visitDate = Instant
+                          .ofEpochSecond(t.seconds, t.nanos)
+                          .atZone(ZoneOffset.UTC)
+                          .toLocalDate(),
+                        description = v.description
+                      )
+                    )
+                    .map(savedVisit =>
+                      CreateVisitResponse(visit = Some(toServiceVisit(savedVisit)))
+                    )
+                    .mapError(_ => Status.INTERNAL)
+                )
             )
+
+        private def toServiceVisit(v: model.Visit): Visit =
+          Visit(
+            id = Some(VisitId(v.id)),
+            petId = v.petId,
+            visitDate = Some(
+              Timestamp.of(
+                seconds = v
+                  .visitDate
+                  .atTime(LocalTime.MIDNIGHT)
+                  .atZone(ZoneOffset.UTC)
+                  .toEpochSecond(),
+                nanos = 0
+              )
+            ),
+            description = v.description
           )
+
+        private def createGetVisitsResponse(vs: List[com.example.model.Visit]) =
+          GetVisitsResponse(visits = vs.map(toServiceVisit))
+
       }
     )
 }
