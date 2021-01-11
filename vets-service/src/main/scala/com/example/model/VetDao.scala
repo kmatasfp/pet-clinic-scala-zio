@@ -5,7 +5,12 @@ import doobie.implicits._
 import doobie.quill.DoobieContext
 import doobie.util.transactor.Transactor
 import io.getquill._
-import zio.{ Has, RIO, Ref, Task, URLayer, ZLayer }
+import zio.Has
+import zio.RIO
+import zio.Ref
+import zio.Task
+import zio.URLayer
+import zio.ZLayer
 import zio.interop.catz._
 
 final case class Specialty(id: Int, name: String)

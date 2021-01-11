@@ -1,24 +1,29 @@
 package com.example
 
-import cats.syntax.apply._
 import cats.instances.option._
+import cats.syntax.apply._
 import com.example.config.Configuration.DbConfig
 import com.example.domain.VetRepository
-import com.example.model.VetDao
 import com.example.model.DbTransactor
-import com.examples.proto.api.vets_service.{
-  GetVetsRequest,
-  GetVetsResponse,
-  Specialty,
-  Vet,
-  ZioVetsService
-}
-import io.grpc.Status
+import com.example.model.VetDao
+import com.examples.proto.api.vets_service.GetVetsRequest
+import com.examples.proto.api.vets_service.GetVetsResponse
+import com.examples.proto.api.vets_service.Specialty
+import com.examples.proto.api.vets_service.Vet
+import com.examples.proto.api.vets_service.ZioVetsService
 import io.grpc.ServerBuilder
+import io.grpc.Status
 import io.grpc.protobuf.services.ProtoReflectionService
 import scalapb.zio_grpc.ServerLayer
-import zio.{ system, ExitCode, Has, IO, URLayer, ZEnv, ZIO, ZLayer }
+import zio.ExitCode
+import zio.Has
+import zio.IO
+import zio.URLayer
+import zio.ZEnv
+import zio.ZIO
+import zio.ZLayer
 import zio.console.putStrLn
+import zio.system
 
 object VetsService {
 

@@ -7,7 +7,11 @@ import doobie.implicits._
 import doobie.quill.DoobieContext
 import doobie.util.transactor.Transactor
 import io.getquill._
-import zio.{ Has, RIO, Task, URLayer, ZLayer }
+import zio.Has
+import zio.RIO
+import zio.Task
+import zio.URLayer
+import zio.ZLayer
 import zio.interop.catz._
 
 case class Visit(

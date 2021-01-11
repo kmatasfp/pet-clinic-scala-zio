@@ -1,10 +1,15 @@
 package com.example.domain
 
-import com.example.model.{ VetDao, Vet => MVet, Specialty => MSpecialty }
-import com.example.domain.{ Specialty, Vet, VetRepository }
-import zio.{ Ref, ZLayer }
-import zio.test._
+import com.example.domain.Specialty
+import com.example.domain.Vet
+import com.example.domain.VetRepository
+import com.example.model.VetDao
+import com.example.model.{ Specialty => MSpecialty }
+import com.example.model.{ Vet => MVet }
+import zio.Ref
+import zio.ZLayer
 import zio.test.DefaultRunnableSpec
+import zio.test._
 
 object VetRepositorySpec extends DefaultRunnableSpec {
   def spec = suite("VetRepository")(

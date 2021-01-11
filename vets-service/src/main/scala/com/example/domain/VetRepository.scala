@@ -1,7 +1,10 @@
 package com.example.domain
 
 import com.example.model.VetDao
-import zio.{ RIO, Task, URLayer, ZLayer }
+import zio.RIO
+import zio.Task
+import zio.URLayer
+import zio.ZLayer
 
 case class Specialty(name: String)
 

@@ -1,17 +1,21 @@
 package com.example
 
-import com.examples.proto.api.vets_service.{ GetVetsRequest, Specialty, Vet, ZioVetsService }
+import scala.jdk.CollectionConverters._
+
 import com.dimafeng.testcontainers.MySQLContainer
+import com.examples.proto.api.vets_service.GetVetsRequest
+import com.examples.proto.api.vets_service.Specialty
+import com.examples.proto.api.vets_service.Vet
+import com.examples.proto.api.vets_service.ZioVetsService
 import io.grpc.ManagedChannelBuilder
 import scalapb.zio_grpc.ZManagedChannel
-import zio.{ Task, ZManaged }
+import zio.Task
+import zio.ZManaged
+import zio.duration._
 import zio.test.Assertion.hasSameElements
 import zio.test.TestAspect._
-import zio.test.environment._
-import zio.duration._
 import zio.test._
-
-import scala.jdk.CollectionConverters._
+import zio.test.environment._
 
 object VetsServiceSpec extends DefaultRunnableSpec {
 

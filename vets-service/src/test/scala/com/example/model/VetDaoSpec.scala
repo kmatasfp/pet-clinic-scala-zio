@@ -1,13 +1,18 @@
 package com.example.model
 
-import com.dimafeng.testcontainers.MySQLContainer
-import com.example.model.{ DbTransactor, Specialty, Vet, VetDao }
-import com.example.config.Configuration.DbConfig
-import zio.test._
-import zio.test.DefaultRunnableSpec
-import zio.{ Task, ZLayer, ZManaged }
-
 import scala.jdk.CollectionConverters._
+
+import com.dimafeng.testcontainers.MySQLContainer
+import com.example.config.Configuration.DbConfig
+import com.example.model.DbTransactor
+import com.example.model.Specialty
+import com.example.model.Vet
+import com.example.model.VetDao
+import zio.Task
+import zio.ZLayer
+import zio.ZManaged
+import zio.test.DefaultRunnableSpec
+import zio.test._
 
 object VetDaoSpec extends DefaultRunnableSpec {
 

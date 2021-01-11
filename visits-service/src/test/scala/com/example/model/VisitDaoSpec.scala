@@ -2,15 +2,19 @@ package com.example.model
 
 import java.time.LocalDate
 
+import scala.jdk.CollectionConverters._
+
 import com.dimafeng.testcontainers.MySQLContainer
-import com.example.model.{ DbTransactor, Visit, VisitDao }
 import com.example.config.Configuration.DbConfig
-import zio.test._
+import com.example.model.DbTransactor
+import com.example.model.Visit
+import com.example.model.VisitDao
+import zio.Task
+import zio.ZLayer
+import zio.ZManaged
 import zio.test.Assertion._
 import zio.test.DefaultRunnableSpec
-import zio.{ Task, ZLayer, ZManaged }
-
-import scala.jdk.CollectionConverters._
+import zio.test._
 
 object VisitDaoSpec extends DefaultRunnableSpec {
 

@@ -1,26 +1,25 @@
 package com.example
 
-import com.examples.proto.api.visits_service.{
-  GetVisitsForPetRequest,
-  GetVisitsForPetsRequest,
-  Visit,
-  ZioVisitsService
-}
-import com.google.protobuf.timestamp.Timestamp
+import scala.jdk.CollectionConverters._
+
 import com.dimafeng.testcontainers.MySQLContainer
+import com.examples.proto.api.visits_service.CreateVisitRequest
+import com.examples.proto.api.visits_service.GetVisitsForPetRequest
+import com.examples.proto.api.visits_service.GetVisitsForPetsRequest
+import com.examples.proto.api.visits_service.Visit
+import com.examples.proto.api.visits_service.VisitId
+import com.examples.proto.api.visits_service.ZioVisitsService
+import com.google.protobuf.timestamp.Timestamp
 import io.grpc.ManagedChannelBuilder
 import scalapb.zio_grpc.ZManagedChannel
-import zio.{ Task, ZManaged }
-import zio.test.Assertion.hasSameElements
-import zio.test.Assertion.equalTo
-import zio.test.TestAspect._
-import zio.test.environment._
+import zio.Task
+import zio.ZManaged
 import zio.duration._
+import zio.test.Assertion.equalTo
+import zio.test.Assertion.hasSameElements
+import zio.test.TestAspect._
 import zio.test._
-
-import scala.jdk.CollectionConverters._
-import com.examples.proto.api.visits_service.VisitId
-import com.examples.proto.api.visits_service.CreateVisitRequest
+import zio.test.environment._
 
 object VisitsServiceSpec extends DefaultRunnableSpec {
 
