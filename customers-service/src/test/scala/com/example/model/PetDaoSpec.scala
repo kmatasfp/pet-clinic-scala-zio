@@ -43,37 +43,30 @@ object PetDaoSpec extends DefaultRunnableSpec {
 
   def spec =
     suite("PetDao.mySql")(testM("should return a pet from mysql db") {
-      mysqlManaged
-        .use {
-          mysql =>
-            assertM(PetDao.findById(7))(
-              hasSameElements(
-                List(
-                  (
-                    Pet(
-                      id = 7,
-                      name = "Samantha",
-                      birthDate = LocalDate.of(1995, 9, 4),
-                      typeId = 1,
-                      ownerId = 6
-                    ),
-                    PetType(id = 1, name = "cat"),
-                    PetOwner(
-                      id = 6,
-                      firstName = "Jean",
-                      lastName = "Coleman",
-                      address = "105 N. Lake St.",
-                      city = "Monona",
-                      telephone = "6085552654"
-                    )
-                  )
-                )
+      assertM(PetDao.findById(7))(
+        hasSameElements(
+          List(
+            (
+              Pet(
+                id = 7,
+                name = "Samantha",
+                birthDate = LocalDate.of(1995, 9, 4),
+                typeId = 1,
+                ownerId = 6
+              ),
+              PetType(id = 1, name = "cat"),
+              PetOwner(
+                id = 6,
+                firstName = "Jean",
+                lastName = "Coleman",
+                address = "105 N. Lake St.",
+                city = "Monona",
+                telephone = "6085552654"
               )
-            ).provideCustomLayer(
-              ZLayer.succeed(
-                DbConfig(mysql.driverClassName, mysql.jdbcUrl, mysql.username, mysql.password)
-              ) >>> DbTransactor.live >>> PetDao.mySql
             )
-        }
-    }).provideCustomLayerShared(mysqlDbConf).mapError(TestFailure.fail)
+          )
+        )
+      )
+    }).provideCustomLayerShared(mysqlDbConf >>> DbTransactor.live >>> PetDao.mySql)
+      .mapError(TestFailure.fail)
 }
