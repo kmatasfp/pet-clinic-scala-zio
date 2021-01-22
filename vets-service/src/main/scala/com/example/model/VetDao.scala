@@ -6,12 +6,12 @@ import doobie.quill.DoobieContext
 import doobie.util.transactor.Transactor
 import io.getquill._
 import zio.Has
-import zio.RIO
 import zio.Ref
 import zio.Task
 import zio.URLayer
 import zio.ZLayer
 import zio.interop.catz._
+import zio.macros.accessible
 
 final case class Specialty(id: Int, name: String)
 
@@ -22,7 +22,7 @@ final case class Vet(
   )
 
 final case class VetSpecialty(vetId: Int, specialtyId: Int)
-
+@accessible
 object VetDao {
 
   trait Service {
@@ -65,9 +65,6 @@ object VetDao {
         def findAll: zio.Task[List[(Vet, Option[Specialty])]] = ref.get
       }
     )
-
-  def findAll: RIO[VetDao, List[(Vet, Option[Specialty])]] =
-    RIO.accessM(_.get.findAll)
 }
 
 object DbTransactor {

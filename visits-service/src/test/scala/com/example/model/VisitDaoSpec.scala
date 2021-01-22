@@ -124,7 +124,8 @@ object VisitDaoSpec extends DefaultRunnableSpec {
             )
           )
       }
-    ).provideCustomLayerShared(mysqlDbConf >>> DbTransactor.live >>> VisitDao.mySql)
-      .mapError(TestFailure.fail)
+    ).provideCustomLayerShared(
+      (mysqlDbConf >>> DbTransactor.live >>> VisitDao.mySql).mapError(TestFailure.fail)
+    )
 
 }

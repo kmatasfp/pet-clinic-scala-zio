@@ -8,12 +8,11 @@ import doobie.quill.DoobieContext
 import doobie.util.transactor.Transactor
 import io.getquill._
 import zio.Has
-import zio.RIO
-import zio.Ref
 import zio.Task
 import zio.URLayer
 import zio.ZLayer
 import zio.interop.catz._
+import zio.macros.accessible
 
 case class PetOwner(
     id: Int = 0,
@@ -33,10 +32,11 @@ case class Pet(
     typeId: Int,
     ownerId: Int
   )
-
+@accessible
 object PetDao {
   trait Service {
     def findById(petId: Int): Task[List[(Pet, PetType, PetOwner)]]
+    def getPetTypes: Task[List[PetType]]
   }
 
   val mySql: URLayer[DbTransactor, PetDao] = ZLayer.fromService(resource =>
@@ -64,19 +64,12 @@ object PetDao {
                 }
             }
         ).transact(resource.xa)
+
+        def getPetTypes: zio.Task[List[PetType]] =
+            dc.run(types).transact(resource.xa)
         
     }
   )
-
-  val inMemory: URLayer[Has[Ref[List[(Pet, PetType, PetOwner)]]], PetDao] =
-    ZLayer.fromService(ref =>
-      new PetDao.Service {
-        def findById(petID: Int): zio.Task[List[(Pet, PetType, PetOwner)]] = ref.get
-      }
-    )
-
-  def findById(petId: Int): RIO[PetDao, List[(Pet, PetType, PetOwner)]] =
-    RIO.accessM(_.get.findById(petId))
 }
 
 object DbTransactor {

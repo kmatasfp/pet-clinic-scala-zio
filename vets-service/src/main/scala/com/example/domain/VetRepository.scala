@@ -1,10 +1,10 @@
 package com.example.domain
 
 import com.example.model.VetDao
-import zio.RIO
 import zio.Task
 import zio.URLayer
 import zio.ZLayer
+import zio.macros.accessible
 
 case class Specialty(name: String)
 
@@ -14,7 +14,7 @@ case class Vet(
     lastName: String,
     specalities: List[Specialty]
   )
-
+@accessible
 object VetRepository {
   trait Service {
     def all: Task[List[Vet]]
@@ -39,7 +39,4 @@ object VetRepository {
           }.values.toList)
     }
   )
-
-  def all: RIO[VetRepository, List[Vet]] =
-    RIO.accessM(_.get.all)
 }

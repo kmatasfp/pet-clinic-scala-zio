@@ -161,7 +161,8 @@ object VisitsServiceSpec extends DefaultRunnableSpec {
         ).eventually
       } @@ timeout(25.seconds)
     ).provideCustomLayerShared(
-        server.and(
+      server
+        .and(
           ZioVisitsService
             .VisitsClient
             .live(
@@ -170,6 +171,7 @@ object VisitsServiceSpec extends DefaultRunnableSpec {
               )
             )
         )
-      )
-      .mapError(TestFailure.fail)
+        .mapError(TestFailure.fail)
+    )
+
 }

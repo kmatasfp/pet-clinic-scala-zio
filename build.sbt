@@ -3,6 +3,7 @@ lazy val commonSettings = Seq(
   organization := "com.example.petclinic",
   scalaVersion := "2.13.3",
   scalacOptions ++= Seq(
+    "-Ymacro-annotations",
     "-explaintypes",
     "-deprecation",
     "-feature",
@@ -50,6 +51,7 @@ lazy val petclinicVetsService = project
     name := "vets-service",
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio-interop-cats" % "2.2.0.1",
+      "dev.zio" %% "zio-macros" % "1.0.3",
       "ch.qos.logback" % "logback-classic" % "1.2.3",
       "io.getquill" %% "quill-jdbc" % "3.5.3",
       "org.tpolecat" %% "doobie-core" % "0.9.4",
@@ -73,6 +75,7 @@ lazy val petclinicVisitsService = project
     name := "visits-service",
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio-interop-cats" % "2.1.4.0",
+      "dev.zio" %% "zio-macros" % "1.0.3",
       "ch.qos.logback" % "logback-classic" % "1.2.3",
       "io.getquill" %% "quill-jdbc" % "3.5.2",
       "org.tpolecat" %% "doobie-core" % "0.9.4",
@@ -96,6 +99,7 @@ lazy val petclinicCustomersService = project
     name := "customers-service",
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio-interop-cats" % "2.1.4.0",
+      "dev.zio" %% "zio-macros" % "1.0.3",
       "ch.qos.logback" % "logback-classic" % "1.2.3",
       "io.getquill" %% "quill-jdbc" % "3.5.2",
       "org.tpolecat" %% "doobie-core" % "0.9.4",

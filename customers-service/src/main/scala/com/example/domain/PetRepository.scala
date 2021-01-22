@@ -1,8 +1,12 @@
 package com.example.domain
 
-import com.example.model.PetDao
-import zio.{ RIO, Task, URLayer, ZLayer }
 import java.time.LocalDate
+
+import com.example.model.PetDao
+import zio.Task
+import zio.URLayer
+import zio.ZLayer
+import zio.macros.accessible
 
 case class PetOwner(
     firstName: String,
@@ -21,11 +25,12 @@ case class Pet(
     `type`: PetType,
     owner: PetOwner
   )
-
+@accessible
 object PetRepository {
 
   trait Service {
     def findById(petId: Int): Task[Option[Pet]]
+    def getPetTypes: Task[List[PetType]]
   }
 
   val live: URLayer[PetDao, PetRepository] = ZLayer.fromService(dao =>
@@ -43,10 +48,9 @@ object PetRepository {
                 PetOwner(po.firstName, po.lastName, po.address, po.city, po.telephone)
               )
           })
+
+      def getPetTypes: zio.Task[List[PetType]] =
+        dao.getPetTypes.map(pts => pts.map(pt => PetType(pt.name)))
     }
   )
-
-  def findById(petId: Int): RIO[PetRepository, Option[Pet]] =
-    RIO.accessM(_.get.findById(petId))
-
 }

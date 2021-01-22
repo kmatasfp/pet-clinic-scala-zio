@@ -8,11 +8,11 @@ import doobie.quill.DoobieContext
 import doobie.util.transactor.Transactor
 import io.getquill._
 import zio.Has
-import zio.RIO
 import zio.Task
 import zio.URLayer
 import zio.ZLayer
 import zio.interop.catz._
+import zio.macros.accessible
 
 case class Visit(
     id: Int = 0,
@@ -20,7 +20,7 @@ case class Visit(
     visitDate: LocalDate,
     description: String
   )
-
+@accessible
 object VisitDao {
 
   trait Service {
@@ -53,16 +53,6 @@ object VisitDao {
 
     }
   )
-
-  def save(v: Visit): RIO[VisitDao, Visit] =
-    RIO.accessM(_.get.save(v))
-
-  def findByPetId(petId: Int): RIO[VisitDao, List[Visit]] =
-    RIO.accessM(_.get.findByPetId(petId))
-
-  def findByPetIdIn(petIds: List[Int]): RIO[VisitDao, List[Visit]] =
-    RIO.accessM(_.get.findByPetIdIn(petIds))
-
 }
 
 object DbTransactor {
