@@ -57,7 +57,7 @@ object PetRepositorySpec extends DefaultRunnableSpec {
               id = 7,
               name = "Samantha",
               birthDate = LocalDate.of(1995, 9, 4),
-              `type` = PetType(name = "cat"),
+              `type` = PetType(1, name = "cat"),
               owner = PetOwner(
                 firstName = "Jean",
                 lastName = "Coleman",
@@ -86,9 +86,9 @@ object PetRepositorySpec extends DefaultRunnableSpec {
       assertM(PetRepository.getPetTypes)(
         hasSameElements(
           List(
-            PetType("cat"),
-            PetType("dog"),
-            PetType("lizard")
+            PetType(1, "cat"),
+            PetType(2, "dog"),
+            PetType(3, "lizard")
           )
         )
       ).provideLayer(

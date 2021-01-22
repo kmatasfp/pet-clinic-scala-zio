@@ -16,7 +16,7 @@ case class PetOwner(
     telephone: String
   )
 
-case class PetType(name: String)
+case class PetType(id: Int, name: String)
 
 case class Pet(
     id: Int = 0,
@@ -44,13 +44,13 @@ object PetRepository {
                 p.id,
                 p.name,
                 p.birthDate,
-                PetType(pt.name),
+                PetType(pt.id, pt.name),
                 PetOwner(po.firstName, po.lastName, po.address, po.city, po.telephone)
               )
           })
 
       def getPetTypes: zio.Task[List[PetType]] =
-        dao.getPetTypes.map(pts => pts.map(pt => PetType(pt.name)))
+        dao.getPetTypes.map(pts => pts.map(pt => PetType(pt.id, pt.name)))
     }
   )
 }
