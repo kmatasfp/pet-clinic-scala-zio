@@ -14,7 +14,7 @@ import com.example.config.Configuration.DbConfig
 
 object PetDaoSpec extends DefaultRunnableSpec {
 
-  private val mysqlC = {
+  private val mysqlManaged = {
     val acquire = Task {
 
       val mysql = MySQLContainer().configure { c =>
@@ -35,9 +35,15 @@ object PetDaoSpec extends DefaultRunnableSpec {
     ZManaged.make(acquire)(release)
   }
 
+  private val mysqlDbConf = ZLayer.fromManaged(
+    mysqlManaged.map(mysql =>
+      DbConfig(mysql.driverClassName, mysql.jdbcUrl, mysql.username, mysql.password)
+    )
+  )
+
   def spec =
     suite("PetDao.mySql")(testM("should return a pet from mysql db") {
-      mysqlC
+      mysqlManaged
         .use {
           mysql =>
             assertM(PetDao.findById(7))(
@@ -69,5 +75,5 @@ object PetDaoSpec extends DefaultRunnableSpec {
               ) >>> DbTransactor.live >>> PetDao.mySql
             )
         }
-    })
+    }).provideCustomLayerShared(mysqlDbConf).mapError(TestFailure.fail)
 }
