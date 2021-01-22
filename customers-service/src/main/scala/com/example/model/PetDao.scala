@@ -37,6 +37,7 @@ object PetDao {
   trait Service {
     def findById(petId: Int): Task[List[(Pet, PetType, PetOwner)]]
     def getPetTypes: Task[List[PetType]]
+    def save(pet: Pet): Task[Pet]
   }
 
   val mySql: URLayer[DbTransactor, PetDao] = ZLayer.fromService(resource =>
@@ -67,6 +68,10 @@ object PetDao {
 
         def getPetTypes: zio.Task[List[PetType]] =
             dc.run(types).transact(resource.xa)
+
+        def save(pet: Pet): zio.Task[Pet] =
+          dc.run(pets.insert(lift(pet)).returningGenerated(_.id)).transact(resource.xa)
+          .map(id => pet.copy(id = id))    
         
     }
   )

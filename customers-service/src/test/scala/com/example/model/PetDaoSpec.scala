@@ -83,6 +83,43 @@ object PetDaoSpec extends DefaultRunnableSpec {
             )
           )
         )
+      },
+      testM("should insert pet to mysql db") {
+        PetDao
+          .save(
+            Pet(
+              name = "Ghost",
+              birthDate = LocalDate.of(2020, 1, 5),
+              typeId = 2,
+              ownerId = 6
+            )
+          )
+          .flatMap(p =>
+            assertM(PetDao.findById(p.id))(
+              hasSameElements(
+                List(
+                  (
+                    Pet(
+                      id = 14,
+                      name = "Ghost",
+                      birthDate = LocalDate.of(2020, 1, 5),
+                      typeId = 2,
+                      ownerId = 6
+                    ),
+                    PetType(id = 2, name = "dog"),
+                    PetOwner(
+                      id = 6,
+                      firstName = "Jean",
+                      lastName = "Coleman",
+                      address = "105 N. Lake St.",
+                      city = "Monona",
+                      telephone = "6085552654"
+                    )
+                  )
+                )
+              )
+            )
+          )
       }
     ).provideCustomLayerShared(
       (mysqlDbConf >>> DbTransactor.live >>> PetDao.mySql).mapError(TestFailure.fail)
