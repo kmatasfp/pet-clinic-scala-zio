@@ -1,7 +1,7 @@
 lazy val commonSettings = Seq(
   version := "1.0.0",
   organization := "com.example.petclinic",
-  scalaVersion := "2.13.3",
+  scalaVersion := "2.13.4",
   scalacOptions ++= Seq(
     "-Ymacro-annotations",
     "-explaintypes",
