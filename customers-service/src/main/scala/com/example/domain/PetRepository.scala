@@ -3,20 +3,22 @@ package com.example.domain
 import java.time.LocalDate
 
 import com.example.model.PetDao
+import com.example.model.{ Pet => MPet }
 import zio.Task
 import zio.URLayer
 import zio.ZLayer
 import zio.macros.accessible
 
 case class PetOwner(
-    firstName: String,
-    lastName: String,
-    address: String,
-    city: String,
-    telephone: String
+    id: Int = 0,
+    firstName: Option[String] = None,
+    lastName: Option[String] = None,
+    address: Option[String] = None,
+    city: Option[String] = None,
+    telephone: Option[String] = None
   )
 
-case class PetType(id: Int, name: String)
+case class PetType(id: Int, name: Option[String] = None)
 
 case class Pet(
     id: Int = 0,
@@ -31,6 +33,7 @@ object PetRepository {
   trait Service {
     def findById(petId: Int): Task[Option[Pet]]
     def getPetTypes: Task[List[PetType]]
+    def save(pet: Pet): Task[Pet]
   }
 
   val live: URLayer[PetDao, PetRepository] = ZLayer.fromService(dao =>
@@ -44,13 +47,32 @@ object PetRepository {
                 p.id,
                 p.name,
                 p.birthDate,
-                PetType(pt.id, pt.name),
-                PetOwner(po.firstName, po.lastName, po.address, po.city, po.telephone)
+                PetType(pt.id, Option(pt.name)),
+                PetOwner(
+                  po.id,
+                  Option(po.firstName),
+                  Option(po.lastName),
+                  Option(po.address),
+                  Option(po.city),
+                  Option(po.telephone)
+                )
               )
           })
 
       def getPetTypes: zio.Task[List[PetType]] =
-        dao.getPetTypes.map(pts => pts.map(pt => PetType(pt.id, pt.name)))
+        dao.getPetTypes.map(pts => pts.map(pt => PetType(pt.id, Option(pt.name))))
+
+      def save(pet: Pet): zio.Task[Pet] =
+        dao
+          .save(
+            MPet(
+              name = pet.name,
+              birthDate = pet.birthDate,
+              typeId = pet.`type`.id,
+              ownerId = pet.owner.id
+            )
+          )
+          .map(saved => pet.copy(id = saved.id))
     }
   )
 }

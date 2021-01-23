@@ -57,13 +57,14 @@ object PetRepositorySpec extends DefaultRunnableSpec {
               id = 7,
               name = "Samantha",
               birthDate = LocalDate.of(1995, 9, 4),
-              `type` = PetType(1, name = "cat"),
+              `type` = PetType(1, name = Some("cat")),
               owner = PetOwner(
-                firstName = "Jean",
-                lastName = "Coleman",
-                address = "105 N. Lake St.",
-                city = "Monona",
-                telephone = "6085552654"
+                id = 6,
+                firstName = Some("Jean"),
+                lastName = Some("Coleman"),
+                address = Some("105 N. Lake St."),
+                city = Some("Monona"),
+                telephone = Some("6085552654")
               )
             )
           )
@@ -86,9 +87,42 @@ object PetRepositorySpec extends DefaultRunnableSpec {
       assertM(PetRepository.getPetTypes)(
         hasSameElements(
           List(
-            PetType(1, "cat"),
-            PetType(2, "dog"),
-            PetType(3, "lizard")
+            PetType(1, Some("cat")),
+            PetType(2, Some("dog")),
+            PetType(3, Some("lizard"))
+          )
+        )
+      ).provideLayer(
+        petDao >>> PetRepository.live
+      )
+    },
+    testM("should save Pet") {
+      val petDao = PetDaoMock.Save(
+        anything,
+        valueF(p => MPet(id = 8, p.name, p.birthDate, p.typeId, p.ownerId))
+      )
+
+      assertM(
+        PetRepository.save(
+          Pet(
+            name = "Ghost",
+            birthDate = LocalDate.of(2019, 9, 4),
+            `type` = PetType(id = 1),
+            owner = PetOwner(
+              id = 6
+            )
+          )
+        )
+      )(
+        equalTo(
+          Pet(
+            id = 8,
+            name = "Ghost",
+            birthDate = LocalDate.of(2019, 9, 4),
+            `type` = PetType(1),
+            owner = PetOwner(
+              id = 6
+            )
           )
         )
       ).provideLayer(
