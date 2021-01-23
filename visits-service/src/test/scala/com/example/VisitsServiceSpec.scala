@@ -24,7 +24,7 @@ import zio.ZLayer
 
 object VisitsServiceSpec extends DefaultRunnableSpec {
 
-  private val mysql = {
+  private val mysqlManaged = {
     val acquire = Task {
 
       val mysql = MySQLContainer().configure { c =>
@@ -61,7 +61,7 @@ object VisitsServiceSpec extends DefaultRunnableSpec {
       ZManaged.make(acquire)(_.interruptFork)
     }
 
-  private val server = ZLayer.fromManaged(mysql.flatMap(serverManaged(9001)))
+  private val server = ZLayer.fromManaged(mysqlManaged.flatMap(serverManaged(9001)))
 
   def spec =
     suite("VisitsService")(

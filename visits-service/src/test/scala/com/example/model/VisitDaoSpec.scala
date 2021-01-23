@@ -9,16 +9,16 @@ import com.example.config.Configuration.DbConfig
 import com.example.model.DbTransactor
 import com.example.model.Visit
 import com.example.model.VisitDao
+import zio.Has
 import zio.Task
 import zio.ZLayer
-import zio.ZManaged
 import zio.test.Assertion._
 import zio.test.DefaultRunnableSpec
 import zio.test._
 
 object VisitDaoSpec extends DefaultRunnableSpec {
 
-  private val mysqlManaged = {
+  private val mysql = {
     val acquire = Task {
 
       val mysql = MySQLContainer().configure { c =>
@@ -36,14 +36,13 @@ object VisitDaoSpec extends DefaultRunnableSpec {
 
     val release = (m: MySQLContainer) => Task(m.close()).orDie
 
-    ZManaged.make(acquire)(release)
+    ZLayer.fromAcquireRelease(acquire)(release)
   }
 
-  private val mysqlDbConf = ZLayer.fromManaged(
-    mysqlManaged.map(mysql =>
-      DbConfig(mysql.driverClassName, mysql.jdbcUrl, mysql.username, mysql.password)
+  private val mysqlDbConf =
+    mysql.map(msc =>
+      Has(DbConfig(msc.get.driverClassName, msc.get.jdbcUrl, msc.get.username, msc.get.password))
     )
-  )
 
   def spec =
     suite("VisitDao.mySql")(
