@@ -1,133 +1,78 @@
 package com.example
 
-import java.time.LocalDate
-
 import com.example.domain.Pet
+import com.example.domain.PetDaoMock
 import com.example.domain.PetOwner
 import com.example.domain.PetRepository
 import com.example.domain.PetType
 import com.example.model.{ Pet => MPet }
 import com.example.model.{ PetOwner => MPetOwner }
 import com.example.model.{ PetType => MPetType }
-import com.example.model.PetDao
 import zio.test.Assertion._
 import zio.test.DefaultRunnableSpec
 import zio.test._
+import zio.test.magnolia._
 import zio.test.mock.Expectation._
-import zio.test.mock.mockable
-
-@mockable[PetDao.Service]
-object PetDaoMock
 
 object PetRepositorySpec extends DefaultRunnableSpec {
 
   def spec = suite("PetRepository")(
     testM("should return Pet for given id") {
+      checkM(DeriveGen[MPet], DeriveGen[MPetType], DeriveGen[MPetOwner]) {
+        (mPet, mPetType, mOwner) =>
+          val petDao = PetDaoMock.FindById(anything, value(List((mPet, mPetType, mOwner))))
 
-      val petDao = PetDaoMock.FindById(
-        anything,
-        value(
-          List(
-            (
-              MPet(
-                id = 7,
-                name = "Samantha",
-                birthDate = LocalDate.of(1995, 9, 4),
-                typeId = 1,
-                ownerId = 6
-              ),
-              MPetType(id = 1, name = "cat"),
-              MPetOwner(
-                id = 6,
-                firstName = "Jean",
-                lastName = "Coleman",
-                address = "105 N. Lake St.",
-                city = "Monona",
-                telephone = "6085552654"
+          assertM(PetRepository.findById(mPet.id))(
+            equalTo(
+              Some(
+                Pet(
+                  id = mPet.id,
+                  name = mPet.name,
+                  birthDate = mPet.birthDate,
+                  `type` = PetType(mPetType.id, name = Option(mPetType.name)),
+                  owner = PetOwner(
+                    id = mOwner.id,
+                    firstName = Option(mOwner.firstName),
+                    lastName = Option(mOwner.lastName),
+                    address = Option(mOwner.address),
+                    city = Option(mOwner.city),
+                    telephone = Option(mOwner.telephone)
+                  )
+                )
               )
             )
+          ).provideLayer(
+            petDao >>> PetRepository.live
           )
-        )
-      )
+      }
 
-      assertM(PetRepository.findById(7))(
-        equalTo(
-          Some(
-            Pet(
-              id = 7,
-              name = "Samantha",
-              birthDate = LocalDate.of(1995, 9, 4),
-              `type` = PetType(1, name = Some("cat")),
-              owner = PetOwner(
-                id = 6,
-                firstName = Some("Jean"),
-                lastName = Some("Coleman"),
-                address = Some("105 N. Lake St."),
-                city = Some("Monona"),
-                telephone = Some("6085552654")
-              )
-            )
-          )
-        )
-      ).provideLayer(
-        petDao >>> PetRepository.live
-      )
     },
     testM("should return PetTypes") {
-      val petDao = PetDaoMock.GetPetTypes(
-        value(
-          List(
-            MPetType(id = 1, name = "cat"),
-            MPetType(id = 2, name = "dog"),
-            MPetType(id = 3, name = "lizard")
-          )
+      checkM(Gen.listOfN(10)(DeriveGen[MPetType])) { (someMPetTypes) =>
+        val petDao = PetDaoMock.GetPetTypes(value((someMPetTypes)))
+        assertM(PetRepository.getPetTypes)(
+          hasSameElements((someMPetTypes).map(pt => PetType(pt.id, Option(pt.name))))
+        ).provideLayer(
+          petDao >>> PetRepository.live
         )
-      )
+      }
 
-      assertM(PetRepository.getPetTypes)(
-        hasSameElements(
-          List(
-            PetType(1, Some("cat")),
-            PetType(2, Some("dog")),
-            PetType(3, Some("lizard"))
-          )
-        )
-      ).provideLayer(
-        petDao >>> PetRepository.live
-      )
     },
     testM("should save Pet") {
-      val petDao = PetDaoMock.Save(
-        anything,
-        valueF(p => MPet(id = 8, p.name, p.birthDate, p.typeId, p.ownerId))
-      )
+      checkM(DeriveGen[Pet], Gen.anyInt) { (pet, autoGenPetId) =>
+        val petDao = PetDaoMock.Save(
+          anything,
+          valueF(p => MPet(id = autoGenPetId, p.name, p.birthDate, p.typeId, p.ownerId))
+        )
 
-      assertM(
-        PetRepository.save(
-          Pet(
-            name = "Ghost",
-            birthDate = LocalDate.of(2019, 9, 4),
-            `type` = PetType(id = 1),
-            owner = PetOwner(
-              id = 6
-            )
-          )
+        assertM(PetRepository.save(pet))(
+          equalTo(pet.copy(id = autoGenPetId))
+        ).provideLayer(
+          petDao >>> PetRepository.live
         )
-      )(
-        equalTo(
-          Pet(
-            id = 8,
-            name = "Ghost",
-            birthDate = LocalDate.of(2019, 9, 4),
-            `type` = PetType(1),
-            owner = PetOwner(
-              id = 6
-            )
-          )
-        )
-      ).provideLayer(
-        petDao >>> PetRepository.live
-      )
+
+      }
+
     }
   )
 

@@ -15,7 +15,8 @@ lazy val commonSettings = Seq(
     "-Xlint:nonlocal-return",
     "-Xlint:constant",
     "-Xlint:adapted-args",
-    "-language:existentials"
+    "-language:existentials",
+    "-language:experimental.macros"
   )
 )
 
@@ -60,6 +61,7 @@ lazy val petclinicVetsService = project
       "mysql" % "mysql-connector-java" % "8.0.21",
       "dev.zio" %% "zio-test" % "1.0.3" % Test,
       "dev.zio" %% "zio-test-sbt" % "1.0.3" % Test,
+      "dev.zio" %% "zio-test-magnolia" % "1.0.3" % Test,
       "com.dimafeng" %% "testcontainers-scala-core" % "0.38.7" % Test,
       "com.dimafeng" %% "testcontainers-scala-mysql" % "0.38.7" % Test,
       "org.testcontainers" % "testcontainers" % "1.15.1" % Test
@@ -84,6 +86,7 @@ lazy val petclinicVisitsService = project
       "mysql" % "mysql-connector-java" % "8.0.21",
       "dev.zio" %% "zio-test" % "1.0.3" % Test,
       "dev.zio" %% "zio-test-sbt" % "1.0.3" % Test,
+      "dev.zio" %% "zio-test-magnolia" % "1.0.3" % Test,
       "com.dimafeng" %% "testcontainers-scala-core" % "0.38.1" % Test,
       "com.dimafeng" %% "testcontainers-scala-mysql" % "0.38.1" % Test,
       "org.testcontainers" % "testcontainers" % "1.15.1" % Test
@@ -108,6 +111,7 @@ lazy val petclinicCustomersService = project
       "mysql" % "mysql-connector-java" % "8.0.21",
       "dev.zio" %% "zio-test" % "1.0.3" % Test,
       "dev.zio" %% "zio-test-sbt" % "1.0.3" % Test,
+      "dev.zio" %% "zio-test-magnolia" % "1.0.3" % Test,
       "com.dimafeng" %% "testcontainers-scala-core" % "0.38.1" % Test,
       "com.dimafeng" %% "testcontainers-scala-mysql" % "0.38.1" % Test,
       "org.testcontainers" % "testcontainers" % "1.15.1" % Test
