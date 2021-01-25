@@ -1,16 +1,17 @@
 package com.example.model
 
-import zio.test.DefaultRunnableSpec
-import zio.Task
-import com.dimafeng.testcontainers.MySQLContainer
+import java.time.LocalDate
 
 import scala.jdk.CollectionConverters._
-import zio.ZLayer
-import zio.Has
+
+import com.dimafeng.testcontainers.MySQLContainer
 import com.example.config.Configuration.DbConfig
-import zio.test._
+import zio.Has
+import zio.Task
+import zio.ZLayer
 import zio.test.Assertion.hasSameElements
-import java.time.LocalDate
+import zio.test.DefaultRunnableSpec
+import zio.test._
 
 object OwnerDaoSpec extends DefaultRunnableSpec {
 
