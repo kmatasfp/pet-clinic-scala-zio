@@ -30,7 +30,7 @@ object PetDao {
 
       private val owners = quote(querySchema[Owner]("owners"))
 
-      def findById(petId: Int): zio.Task[List[(Pet, PetType, Owner)]] = 
+      def findById(petId: Int): Task[List[(Pet, PetType, Owner)]] = 
         dc.run(
             quote {
                 for {
@@ -43,10 +43,10 @@ object PetDao {
             }
         ).transact(resource.xa)
 
-      def getPetTypes: zio.Task[List[PetType]] =
+      def getPetTypes: Task[List[PetType]] =
         dc.run(types).transact(resource.xa)
 
-      def save(pet: Pet): zio.Task[Pet] =
+      def save(pet: Pet): Task[Pet] =
         dc.run(pets.insert(lift(pet)).returningGenerated(_.id)).transact(resource.xa)
         .map(id => pet.copy(id = id))    
         

@@ -1,12 +1,12 @@
 package com.example
 
-import com.example.domain.Pet
 import com.example.domain.PetDaoMock
-import com.example.domain.PetOwner
 import com.example.domain.PetRepository
-import com.example.domain.PetType
-import com.example.model.{ Pet => MPet }
+import com.example.domain.PetRepository.Owner
+import com.example.domain.PetRepository.Pet
+import com.example.domain.PetRepository.PetType
 import com.example.model.{ Owner => MOwner }
+import com.example.model.{ Pet => MPet }
 import com.example.model.{ PetType => MPetType }
 import zio.test.Assertion._
 import zio.test.DefaultRunnableSpec
@@ -16,7 +16,7 @@ import zio.test.mock.Expectation._
 
 object PetRepositorySpec extends DefaultRunnableSpec {
 
-  def spec = suite("PetRepository")(
+  def spec = suite("PetRepository.live")(
     testM("should return Pet for given id") {
       checkM(DeriveGen[MPet], DeriveGen[MPetType], DeriveGen[MOwner]) {
         (mPet, mPetType, mOwner) =>
@@ -30,7 +30,7 @@ object PetRepositorySpec extends DefaultRunnableSpec {
                   name = mPet.name,
                   birthDate = mPet.birthDate,
                   `type` = PetType(mPetType.id, name = Option(mPetType.name)),
-                  owner = PetOwner(
+                  owner = Owner(
                     id = mOwner.id,
                     firstName = Option(mOwner.firstName),
                     lastName = Option(mOwner.lastName),

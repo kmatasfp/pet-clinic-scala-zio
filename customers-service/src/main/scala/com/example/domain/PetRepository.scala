@@ -9,26 +9,25 @@ import zio.URLayer
 import zio.ZLayer
 import zio.macros.accessible
 
-case class PetOwner(
-    id: Int = 0,
-    firstName: Option[String] = None,
-    lastName: Option[String] = None,
-    address: Option[String] = None,
-    city: Option[String] = None,
-    telephone: Option[String] = None
-  )
-
-case class PetType(id: Int, name: Option[String] = None)
-
-case class Pet(
-    id: Int = 0,
-    name: String,
-    birthDate: LocalDate,
-    `type`: PetType,
-    owner: PetOwner
-  )
 @accessible
 object PetRepository {
+
+  case class PetType(id: Int, name: Option[String] = None)
+  case class Pet(
+      id: Int = 0,
+      name: String,
+      birthDate: LocalDate,
+      `type`: PetType,
+      owner: Owner
+    )
+  case class Owner(
+      id: Int = 0,
+      firstName: Option[String] = None,
+      lastName: Option[String] = None,
+      address: Option[String] = None,
+      city: Option[String] = None,
+      telephone: Option[String] = None
+    )
 
   trait Service {
     def findById(petId: Int): Task[Option[Pet]]
@@ -48,7 +47,7 @@ object PetRepository {
                 p.name,
                 p.birthDate,
                 PetType(pt.id, Option(pt.name)),
-                PetOwner(
+                Owner(
                   po.id,
                   Option(po.firstName),
                   Option(po.lastName),
