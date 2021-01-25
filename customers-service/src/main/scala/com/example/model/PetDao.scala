@@ -1,41 +1,18 @@
 package com.example.model
 
-import java.time.LocalDate
-
-import com.example.config.Configuration.DbConfig
 import doobie.implicits._
 import doobie.quill.DoobieContext
-import doobie.util.transactor.Transactor
 import io.getquill._
-import zio.Has
 import zio.Task
 import zio.URLayer
 import zio.ZLayer
 import zio.interop.catz._
 import zio.macros.accessible
 
-case class PetOwner(
-    id: Int = 0,
-    firstName: String,
-    lastName: String,
-    address: String,
-    city: String,
-    telephone: String
-  )
-
-case class PetType(id: Int = 0, name: String)
-
-case class Pet(
-    id: Int = 0,
-    name: String,
-    birthDate: LocalDate,
-    typeId: Int,
-    ownerId: Int
-  )
 @accessible
 object PetDao {
   trait Service {
-    def findById(petId: Int): Task[List[(Pet, PetType, PetOwner)]]
+    def findById(petId: Int): Task[List[(Pet, PetType, Owner)]]
     def getPetTypes: Task[List[PetType]]
     def save(pet: Pet): Task[Pet]
   }
@@ -51,9 +28,9 @@ object PetDao {
 
       private val types = quote(querySchema[PetType]("types"))
 
-      private val owners = quote(querySchema[PetOwner]("owners"))
+      private val owners = quote(querySchema[Owner]("owners"))
 
-      def findById(petId: Int): zio.Task[List[(Pet, PetType, PetOwner)]] = 
+      def findById(petId: Int): zio.Task[List[(Pet, PetType, Owner)]] = 
         dc.run(
             quote {
                 for {
@@ -75,17 +52,4 @@ object PetDao {
         
     }
   )
-}
-
-object DbTransactor {
-  trait Resource {
-    val xa: Transactor[Task]
-  }
-
-  val live: URLayer[Has[DbConfig], DbTransactor] = ZLayer.fromService { db =>
-    new Resource {
-      val xa: Transactor[Task] =
-        Transactor.fromDriverManager(db.driver, db.url, db.user, db.password)
-    }
-  }
 }

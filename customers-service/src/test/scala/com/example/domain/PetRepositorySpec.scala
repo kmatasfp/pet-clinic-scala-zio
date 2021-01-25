@@ -6,7 +6,7 @@ import com.example.domain.PetOwner
 import com.example.domain.PetRepository
 import com.example.domain.PetType
 import com.example.model.{ Pet => MPet }
-import com.example.model.{ PetOwner => MPetOwner }
+import com.example.model.{ Owner => MOwner }
 import com.example.model.{ PetType => MPetType }
 import zio.test.Assertion._
 import zio.test.DefaultRunnableSpec
@@ -18,7 +18,7 @@ object PetRepositorySpec extends DefaultRunnableSpec {
 
   def spec = suite("PetRepository")(
     testM("should return Pet for given id") {
-      checkM(DeriveGen[MPet], DeriveGen[MPetType], DeriveGen[MPetOwner]) {
+      checkM(DeriveGen[MPet], DeriveGen[MPetType], DeriveGen[MOwner]) {
         (mPet, mPetType, mOwner) =>
           val petDao = PetDaoMock.FindById(anything, value(List((mPet, mPetType, mOwner))))
 

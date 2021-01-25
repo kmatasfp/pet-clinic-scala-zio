@@ -56,7 +56,7 @@ object PetDaoSpec extends DefaultRunnableSpec {
                   ownerId = 6
                 ),
                 PetType(id = 1, name = "cat"),
-                PetOwner(
+                Owner(
                   id = 6,
                   firstName = "Jean",
                   lastName = "Coleman",
@@ -106,7 +106,7 @@ object PetDaoSpec extends DefaultRunnableSpec {
                       ownerId = 6
                     ),
                     PetType(id = 2, name = "dog"),
-                    PetOwner(
+                    Owner(
                       id = 6,
                       firstName = "Jean",
                       lastName = "Coleman",
