@@ -1,16 +1,16 @@
 package com.example.domain
 
-import zio.test.DefaultRunnableSpec
-import zio.test._
-import zio.test.magnolia.DeriveGen
-import com.example.model.{ Pet => MPet }
-import com.example.model.{ Owner => MOwner }
-import com.example.model.{ PetType => MPetType }
-import zio.test.Assertion._
-import zio.test.mock.Expectation._
 import com.example.domain.OwnerRepository.Owner
 import com.example.domain.OwnerRepository.Pet
 import com.example.domain.OwnerRepository.PetType
+import com.example.model.{ Owner => MOwner }
+import com.example.model.{ Pet => MPet }
+import com.example.model.{ PetType => MPetType }
+import zio.test.Assertion._
+import zio.test.DefaultRunnableSpec
+import zio.test._
+import zio.test.magnolia.DeriveGen
+import zio.test.mock.Expectation._
 
 object OwnerRepositorySpec extends DefaultRunnableSpec {
 

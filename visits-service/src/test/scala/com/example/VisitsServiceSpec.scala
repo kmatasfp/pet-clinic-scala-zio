@@ -13,6 +13,7 @@ import com.google.protobuf.timestamp.Timestamp
 import io.grpc.ManagedChannelBuilder
 import scalapb.zio_grpc.ZManagedChannel
 import zio.Task
+import zio.ZLayer
 import zio.ZManaged
 import zio.duration._
 import zio.test.Assertion.equalTo
@@ -20,7 +21,6 @@ import zio.test.Assertion.hasSameElements
 import zio.test.TestAspect._
 import zio.test._
 import zio.test.environment._
-import zio.ZLayer
 
 object VisitsServiceSpec extends DefaultRunnableSpec {
 
