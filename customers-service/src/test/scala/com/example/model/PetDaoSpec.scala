@@ -2,44 +2,13 @@ package com.example.model
 
 import java.time.LocalDate
 
-import scala.jdk.CollectionConverters._
-
-import com.dimafeng.testcontainers.MySQLContainer
-import com.example.config.Configuration.DbConfig
-import zio.Has
-import zio.Task
-import zio.ZLayer
+import com.example.fixture.RunningMysql
+import com.example.fixture.mysqlDbConf
 import zio.test.Assertion.hasSameElements
 import zio.test.DefaultRunnableSpec
 import zio.test._
 
 object PetDaoSpec extends DefaultRunnableSpec {
-
-  private val mysql = {
-    val acquire = Task {
-
-      val mysql = MySQLContainer().configure { c =>
-        c.withUsername("root")
-        c.withPassword("")
-        c.withInitScript("db/mysql/init.sql")
-        c.withTmpFs(Map("/testtmpfs" -> "rw").asJava)
-        c.withDatabaseName("petclinic")
-      }
-
-      mysql.start()
-
-      mysql
-    }
-
-    val release = (m: MySQLContainer) => Task(m.close()).orDie
-
-    ZLayer.fromAcquireRelease(acquire)(release)
-  }
-
-  private val mysqlDbConf =
-    mysql.map(msc =>
-      Has(DbConfig(msc.get.driverClassName, msc.get.jdbcUrl, msc.get.username, msc.get.password))
-    )
 
   def spec =
     suite("PetDao.mySql")(
@@ -121,7 +90,8 @@ object PetDaoSpec extends DefaultRunnableSpec {
           )
       }
     ).provideCustomLayerShared(
-      (mysqlDbConf >>> DbTransactor.live >>> PetDao.mySql).mapError(TestFailure.fail)
+      (RunningMysql.live >>> mysqlDbConf >>> DbTransactor.live >>> PetDao.mySql)
+        .mapError(TestFailure.fail)
     )
 
 }

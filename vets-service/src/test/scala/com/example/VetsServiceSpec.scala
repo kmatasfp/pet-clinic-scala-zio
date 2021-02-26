@@ -1,12 +1,11 @@
 package com.example
 
+import com.example.fixture.OpenPortFinder
 import com.example.fixture.RunningMysql
+import com.example.fixture.VetsGrpcService
 import com.examples.proto.api.vets_service.GetVetsRequest
 import com.examples.proto.api.vets_service.Specialty
 import com.examples.proto.api.vets_service.Vet
-import com.examples.proto.api.vets_service.ZioVetsService
-import io.grpc.ManagedChannelBuilder
-import scalapb.zio_grpc.ZManagedChannel
 import zio.ExitCode
 import zio.Task
 import zio.duration._
@@ -21,26 +20,9 @@ object VetsServiceSpec extends DefaultRunnableSpec {
     suite("VetsService")(
       testM("should return list of Vets") {
 
-        val runServerInTheBackground = VetsServiceServer
-          .run(List.empty)
-          .flatMap {
-            case ExitCode.failure => Task.fail(new IllegalStateException("App crashed"))
-            case _                => Task.unit
-          }
-          .fork
-
         for {
-          dbUser <- RunningMysql.username
-          dbPassword <- RunningMysql.password
-          dbUrl <- RunningMysql.jdbcUrl
-          jdbcClassName <- RunningMysql.driverClassName
-          _ <- TestSystem.putEnv("db.user", dbUser)
-          _ <- TestSystem.putEnv("db.pass", dbPassword)
-          _ <- TestSystem.putEnv("jdbc.url", dbUrl)
-          _ <- TestSystem.putEnv("jdbc.driver.name", jdbcClassName)
-          _ <- TestSystem.putEnv("server.port", "9000")
           _ <- runServerInTheBackground
-          vets = ZioVetsService.VetsClient.getVets(GetVetsRequest()).map(_.vets)
+          vets = VetsGrpcService.client.flatMap(_.getVets(GetVetsRequest()).map(_.vets))
           testResult <- assertM(vets)(
             hasSameElements(
               List(
@@ -76,19 +58,33 @@ object VetsServiceSpec extends DefaultRunnableSpec {
         } yield {
           testResult
         }
-      } @@ timeout(25.seconds)
-    ).provideCustomLayerShared(
-      RunningMysql
-        .live
-        .and(
-          ZioVetsService
-            .VetsClient
-            .live(
-              ZManagedChannel(
-                ManagedChannelBuilder.forAddress("localhost", 9000).usePlaintext()
-              )
-            )
-        )
-        .mapError(TestFailure.fail)
+      }.provideCustomLayer(
+        (RunningMysql.live ++ (OpenPortFinder.live >>> VetsGrpcService.live))
+          .mapError(TestFailure.fail)
+      ) @@ timeout(25.seconds)
     )
+
+  private val runServerInTheBackground =
+    for {
+      dbUser <- RunningMysql.username
+      dbPassword <- RunningMysql.password
+      dbUrl <- RunningMysql.jdbcUrl
+      jdbcClassName <- RunningMysql.driverClassName
+      _ <- TestSystem.putEnv("db.user", dbUser)
+      _ <- TestSystem.putEnv("db.pass", dbPassword)
+      _ <- TestSystem.putEnv("jdbc.url", dbUrl)
+      _ <- TestSystem.putEnv("jdbc.driver.name", jdbcClassName)
+      port <- VetsGrpcService.port
+      _ <- TestSystem.putEnv("server.port", port.toString)
+      f <- VetsServiceServer
+        .run(List.empty)
+        .flatMap {
+          case ExitCode.failure => Task.fail(new IllegalStateException("App crashed"))
+          case _                => Task.unit
+        }
+        .fork
+    } yield {
+      f
+    }
+
 }

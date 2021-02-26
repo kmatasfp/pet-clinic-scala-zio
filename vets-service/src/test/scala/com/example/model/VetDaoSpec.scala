@@ -12,15 +12,6 @@ import zio.test._
 
 object VetDaoSpec extends DefaultRunnableSpec {
 
-  private val mysqlDbConf = ZLayer.fromEffect(for {
-    dbUser <- RunningMysql.username
-    dbPassword <- RunningMysql.password
-    dbUrl <- RunningMysql.jdbcUrl
-    jdbcClassName <- RunningMysql.driverClassName
-  } yield {
-    DbConfig(jdbcClassName, dbUrl, dbUser, dbPassword)
-  })
-
   def spec =
     suite("VetDao.mySql")(
       testM("should return vets and their specialities from mysql db") {
@@ -43,4 +34,13 @@ object VetDaoSpec extends DefaultRunnableSpec {
       (RunningMysql.live >>> mysqlDbConf >>> DbTransactor.live >>> VetDao.mySql)
         .mapError(TestFailure.fail)
     )
+
+  private val mysqlDbConf = ZLayer.fromEffect(for {
+    dbUser <- RunningMysql.username
+    dbPassword <- RunningMysql.password
+    dbUrl <- RunningMysql.jdbcUrl
+    jdbcClassName <- RunningMysql.driverClassName
+  } yield {
+    DbConfig(jdbcClassName, dbUrl, dbUser, dbPassword)
+  })
 }

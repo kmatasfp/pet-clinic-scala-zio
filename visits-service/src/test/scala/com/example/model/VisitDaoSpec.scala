@@ -2,47 +2,17 @@ package com.example.model
 
 import java.time.LocalDate
 
-import scala.jdk.CollectionConverters._
-
-import com.dimafeng.testcontainers.MySQLContainer
 import com.example.config.Configuration.DbConfig
+import com.example.fixture.RunningMysql
 import com.example.model.DbTransactor
 import com.example.model.Visit
 import com.example.model.VisitDao
-import zio.Has
-import zio.Task
 import zio.ZLayer
 import zio.test.Assertion._
 import zio.test.DefaultRunnableSpec
 import zio.test._
 
 object VisitDaoSpec extends DefaultRunnableSpec {
-
-  private val mysql = {
-    val acquire = Task {
-
-      val mysql = MySQLContainer().configure { c =>
-        c.withUsername("root")
-        c.withPassword("")
-        c.withInitScript("db/mysql/init.sql")
-        c.withTmpFs(Map("/testtmpfs" -> "rw").asJava)
-        c.withDatabaseName("petclinic")
-      }
-
-      mysql.start()
-
-      mysql
-    }
-
-    val release = (m: MySQLContainer) => Task(m.close()).orDie
-
-    ZLayer.fromAcquireRelease(acquire)(release)
-  }
-
-  private val mysqlDbConf =
-    mysql.map(msc =>
-      Has(DbConfig(msc.get.driverClassName, msc.get.jdbcUrl, msc.get.username, msc.get.password))
-    )
 
   def spec =
     suite("VisitDao.mySql")(
@@ -124,7 +94,17 @@ object VisitDaoSpec extends DefaultRunnableSpec {
           )
       }
     ).provideCustomLayerShared(
-      (mysqlDbConf >>> DbTransactor.live >>> VisitDao.mySql).mapError(TestFailure.fail)
+      (RunningMysql.live >>> mysqlDbConf >>> DbTransactor.live >>> VisitDao.mySql)
+        .mapError(TestFailure.fail)
     )
+
+  private val mysqlDbConf = ZLayer.fromEffect(for {
+    dbUser <- RunningMysql.username
+    dbPassword <- RunningMysql.password
+    dbUrl <- RunningMysql.jdbcUrl
+    jdbcClassName <- RunningMysql.driverClassName
+  } yield {
+    DbConfig(jdbcClassName, dbUrl, dbUser, dbPassword)
+  })
 
 }
