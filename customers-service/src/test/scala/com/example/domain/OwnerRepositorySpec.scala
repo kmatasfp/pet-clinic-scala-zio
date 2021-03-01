@@ -17,15 +17,14 @@ object OwnerRepositorySpec extends DefaultRunnableSpec {
   def spec = suite("OwnerRepository.live")(
     testM("should return Owner for given id") {
 
-      checkM(DeriveGen[MOwner], Gen.listOf(DeriveGen[MPet] <&> DeriveGen[MPetType])) {
-        (mOwner, mPets) =>
-          val ownerDao = {
+      checkM(genOwnerWithMaybePets) {
+        case (mOwner, mPets) =>
+          val ownerDao =
             if (mPets.isEmpty)
               OwnerDaoMock.FindById(anything, value(List((mOwner, None))))
-            else {
+            else
               OwnerDaoMock.FindById(anything, value(mPets.map(pet => (mOwner, Some(pet)))))
-            }
-          }
+
           assertM(OwnerRepository.findById(mOwner.id))(
             equalTo(
               Some(
@@ -54,12 +53,13 @@ object OwnerRepositorySpec extends DefaultRunnableSpec {
       }
     },
     testM("should return all Owners") {
-      checkM(Gen.listOf(DeriveGen[MOwner] <&> Gen.listOf(DeriveGen[MPet] <&> DeriveGen[MPetType]))) {
+      checkM(Gen.listOf(genOwnerWithMaybePets)) {
         mOwners =>
           val ownerDao = OwnerDaoMock.FindAll(
             value(
               mOwners.flatMap {
-                case (mOwner, Nil)   => List((mOwner, None))
+                case (mOwner, Nil) =>
+                  List((mOwner, None))
                 case (mOwner, mPets) => mPets.map(pet => (mOwner, Some(pet)))
               }
             )
@@ -95,7 +95,10 @@ object OwnerRepositorySpec extends DefaultRunnableSpec {
       }
     },
     testM("should save an Owner") {
-      checkM(DeriveGen[Owner], Gen.weighted((Gen.const(0), 5), (Gen.int(1, Int.MaxValue), 5))) {
+      val genIdForUpdate = Gen.const(0)
+      val genIdForInsert = Gen.int(1, Int.MaxValue)
+
+      checkM(DeriveGen[Owner], Gen.weighted((genIdForUpdate, 5), (genIdForInsert, 5))) {
         (owner, oId) =>
           val ownerDao = OwnerDaoMock.Update(
             hasField("id", _.id, isGreaterThan(0)),
@@ -113,4 +116,19 @@ object OwnerRepositorySpec extends DefaultRunnableSpec {
       }
     }
   )
+
+  private val genPetWithPetType = for {
+    pet <- DeriveGen[MPet]
+    petType <- DeriveGen[MPetType]
+  } yield {
+    (pet, petType)
+  }
+
+  private val genOwnerWithMaybePets =
+    for {
+      owner <- DeriveGen[MOwner]
+      petsWithType <- Gen.listOf(genPetWithPetType)
+    } yield {
+      (owner, petsWithType)
+    }
 }

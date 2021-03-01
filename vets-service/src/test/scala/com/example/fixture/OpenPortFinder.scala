@@ -1,8 +1,8 @@
 package com.example.fixture
 
 import java.net.ServerSocket
-import java.util.concurrent.atomic.AtomicInteger
 
+import zio.Ref
 import zio.Task
 import zio.UIO
 import zio.ZLayer
@@ -11,29 +11,25 @@ import zio.macros.accessible
 @accessible
 object OpenPortFinder {
 
-  val portRef = new AtomicInteger(49252)
-
   trait Service {
 
     def find: UIO[Int]
   }
 
-  private def findOpenPort =
+  private def findOpenPort(portToTry: Ref[Int]) =
     (for {
-      portToTry <- UIO.effectTotal(portRef.getAndIncrement())
-      _ <- Task(new ServerSocket(portToTry)).bracket(s => Task(s.close()).orDie)(_ =>
+      port <- portToTry.getAndUpdate(_ + 1)
+      _ <- Task(new ServerSocket(port)).bracket(s => Task(s.close()).orDie)(_ =>
         UIO.effectTotal(true)
       )
     } yield {
-      portToTry
+      port
     }).retryN(100).orDie
 
-  val live: ZLayer[Any, Nothing, OpenPortFinder] = {
-
+  def live(initialPortToTry: Ref[Int]): ZLayer[Any, Nothing, OpenPortFinder] =
     ZLayer.fromEffect(UIO.effectTotal(new OpenPortFinder.Service {
       def find: UIO[Int] =
-        findOpenPort
+        findOpenPort(initialPortToTry)
     }))
 
-  }
 }

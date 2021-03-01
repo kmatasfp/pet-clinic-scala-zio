@@ -34,5 +34,4 @@ object VisitsGrpcService {
         def port: UIO[Int] = UIO.effectTotal(p)
       }
     })
-
 }
