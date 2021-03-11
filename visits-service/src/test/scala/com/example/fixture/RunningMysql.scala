@@ -1,13 +1,10 @@
 package com.example.fixture
 
-import scala.jdk.CollectionConverters._
-
 import com.dimafeng.testcontainers.MySQLContainer
-import zio.Task
-import zio.UIO
-import zio.ZLayer
-import zio.ZManaged
 import zio.macros.accessible
+import zio.{Task, UIO, ZLayer, ZManaged}
+
+import scala.jdk.CollectionConverters._
 
 @accessible
 object RunningMysql {

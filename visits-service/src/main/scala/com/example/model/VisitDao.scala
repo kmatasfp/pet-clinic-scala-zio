@@ -1,18 +1,15 @@
 package com.example.model
 
-import java.time.LocalDate
-
 import com.example.config.Configuration.DbConfig
 import doobie.implicits._
 import doobie.quill.DoobieContext
 import doobie.util.transactor.Transactor
 import io.getquill._
-import zio.Has
-import zio.Task
-import zio.URLayer
-import zio.ZLayer
 import zio.interop.catz._
 import zio.macros.accessible
+import zio.{Has, Task, URLayer, ZLayer}
+
+import java.time.LocalDate
 
 case class Visit(
     id: Int = 0,

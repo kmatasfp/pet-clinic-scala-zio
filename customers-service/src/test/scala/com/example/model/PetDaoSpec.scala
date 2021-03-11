@@ -1,16 +1,15 @@
 package com.example.model
 
-import java.time.LocalDate
-
-import com.example.fixture.RunningMysql
-import com.example.fixture.mysqlDbConf
+import com.example.fixture.{RunningMysql, mysqlDbConf}
 import zio.test.Assertion.hasSameElements
-import zio.test.DefaultRunnableSpec
-import zio.test._
+import zio.test.environment.TestEnvironment
+import zio.test.{DefaultRunnableSpec, _}
+
+import java.time.LocalDate
 
 object PetDaoSpec extends DefaultRunnableSpec {
 
-  def spec =
+  def spec: Spec[TestEnvironment, TestFailure[Throwable], TestSuccess] =
     suite("PetDao.mySql")(
       testM("should return a pet from mysql db") {
         assertM(PetDao.findById(7))(

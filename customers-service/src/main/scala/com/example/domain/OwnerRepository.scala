@@ -1,15 +1,10 @@
 package com.example.domain
 
-import java.time.LocalDate
-
-import com.example.model.OwnerDao
-import com.example.model.{ Owner => MOwner }
-import com.example.model.{ Pet => MPet }
-import com.example.model.{ PetType => MPetType }
-import zio.Task
-import zio.URLayer
-import zio.ZLayer
+import com.example.model.{Owner => MOwner, OwnerDao, Pet => MPet, PetType => MPetType}
 import zio.macros.accessible
+import zio.{Task, URLayer, ZLayer}
+
+import java.time.LocalDate
 
 @accessible
 object OwnerRepository {

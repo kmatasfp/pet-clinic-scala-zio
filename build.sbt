@@ -2,6 +2,8 @@ lazy val commonSettings = Seq(
   version := "1.0.0",
   organization := "com.example.petclinic",
   scalaVersion := "2.13.5",
+  semanticdbEnabled := true,
+  semanticdbVersion := scalafixSemanticdb.revision,
   scalacOptions ++= Seq(
     "-Ymacro-annotations",
     "-explaintypes",
@@ -17,6 +19,11 @@ lazy val commonSettings = Seq(
     "-Xlint:adapted-args",
     "-language:existentials",
     "-language:experimental.macros"
+  ),
+  ThisBuild / scalafixScalaBinaryVersion := CrossVersion.binaryScalaVersion(scalaVersion.value),
+  ThisBuild / scalafixDependencies ++= List(
+    "com.github.liancheng" %% "organize-imports" % "0.5.0",
+    "com.github.vovapolu" %% "scaluzzi" % "0.1.16"
   )
 )
 

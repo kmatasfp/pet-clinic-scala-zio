@@ -3,11 +3,9 @@ package com.example.model
 import doobie.implicits._
 import doobie.quill.DoobieContext
 import io.getquill._
-import zio.Task
-import zio.URLayer
-import zio.ZLayer
 import zio.interop.catz._
 import zio.macros.accessible
+import zio.{Task, URLayer, ZLayer}
 
 @accessible
 object OwnerDao {
@@ -34,23 +32,21 @@ object OwnerDao {
 
         def findAll: Task[List[(Owner, Option[(Pet, PetType)])]] =
           dc.run(quote {
-              for {
-                o <- owners
-                maybePets <- pets.leftJoin(_.ownerId == o.id)
-                maybePetTypes <- types.leftJoin(pt => maybePets.exists(_.typeId == pt.id))
-              } yield { (o, maybePets.flatMap(p => maybePetTypes.map(pt => (p, pt)))) }
-            })
-            .transact(resource.xa)
+            for {
+              o <- owners
+              maybePets <- pets.leftJoin(_.ownerId == o.id)
+              maybePetTypes <- types.leftJoin(pt => maybePets.exists(_.typeId == pt.id))
+            } yield (o, maybePets.flatMap(p => maybePetTypes.map(pt => (p, pt))))
+          }).transact(resource.xa)
 
         def findById(ownerId: Int): Task[List[(Owner, Option[(Pet, PetType)])]] =
           dc.run(quote {
-              for {
-                o <- owners.filter(_.id == lift(ownerId))
-                maybePets <- pets.leftJoin(_.ownerId == o.id)
-                maybePetTypes <- types.leftJoin(pt => maybePets.exists(_.typeId == pt.id))
-              } yield { (o, maybePets.flatMap(p => maybePetTypes.map(pt => (p, pt)))) }
-            })
-            .transact(resource.xa)
+            for {
+              o <- owners.filter(_.id == lift(ownerId))
+              maybePets <- pets.leftJoin(_.ownerId == o.id)
+              maybePetTypes <- types.leftJoin(pt => maybePets.exists(_.typeId == pt.id))
+            } yield (o, maybePets.flatMap(p => maybePetTypes.map(pt => (p, pt))))
+          }).transact(resource.xa)
 
         def insert(owner: Owner): Task[Owner] =
           dc.run(owners.insert(lift(owner)).returningGenerated(_.id))
@@ -59,17 +55,16 @@ object OwnerDao {
 
         def update(owner: Owner): zio.Task[Owner] =
           dc.run(
-              owners
-                .filter(_.id == lift(owner.id))
-                .update(
-                  _.firstName -> lift(owner.firstName),
-                  _.lastName -> lift(owner.lastName),
-                  _.address -> lift(owner.address),
-                  _.city -> lift(owner.city),
-                  _.telephone -> lift(owner.telephone)
-                )
-            )
-            .transact(resource.xa)
+            owners
+              .filter(_.id == lift(owner.id))
+              .update(
+                _.firstName -> lift(owner.firstName),
+                _.lastName -> lift(owner.lastName),
+                _.address -> lift(owner.address),
+                _.city -> lift(owner.city),
+                _.telephone -> lift(owner.telephone)
+              )
+          ).transact(resource.xa)
             .map(_ => owner)
       }
     )

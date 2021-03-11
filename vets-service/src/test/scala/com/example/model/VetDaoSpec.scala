@@ -2,17 +2,13 @@ package com.example.model
 
 import com.example.config.Configuration.DbConfig
 import com.example.fixture.RunningMysql
-import com.example.model.DbTransactor
-import com.example.model.Specialty
-import com.example.model.Vet
-import com.example.model.VetDao
+import com.example.model.{DbTransactor, Specialty, Vet, VetDao}
 import zio.ZLayer
-import zio.test.DefaultRunnableSpec
-import zio.test._
+import zio.test.{DefaultRunnableSpec, _}
 
 object VetDaoSpec extends DefaultRunnableSpec {
 
-  def spec =
+  def spec: Spec[Any, TestFailure[Throwable], TestSuccess] =
     suite("VetDao.mySql")(
       testM("should return vets and their specialities from mysql db") {
 
@@ -40,7 +36,5 @@ object VetDaoSpec extends DefaultRunnableSpec {
     dbPassword <- RunningMysql.password
     dbUrl <- RunningMysql.jdbcUrl
     jdbcClassName <- RunningMysql.driverClassName
-  } yield {
-    DbConfig(jdbcClassName, dbUrl, dbUser, dbPassword)
-  })
+  } yield DbConfig(jdbcClassName, dbUrl, dbUser, dbPassword))
 }

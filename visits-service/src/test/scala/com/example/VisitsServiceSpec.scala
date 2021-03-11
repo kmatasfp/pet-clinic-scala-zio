@@ -1,27 +1,24 @@
 package com.example
 
-import com.example.fixture.OpenPortFinder
-import com.example.fixture.RunningMysql
-import com.example.fixture.VisitsGrpcService
-import com.examples.proto.api.visits_service.CreateVisitRequest
-import com.examples.proto.api.visits_service.GetVisitsForPetRequest
-import com.examples.proto.api.visits_service.GetVisitsForPetsRequest
-import com.examples.proto.api.visits_service.Visit
-import com.examples.proto.api.visits_service.VisitId
+import com.example.fixture.{OpenPortFinder, RunningMysql, VisitsGrpcService}
+import com.examples.proto.api.visits_service.{
+  CreateVisitRequest,
+  GetVisitsForPetRequest,
+  GetVisitsForPetsRequest,
+  Visit,
+  VisitId
+}
 import com.google.protobuf.timestamp.Timestamp
-import zio.ExitCode
-import zio.Ref
-import zio.Task
 import zio.duration._
-import zio.test.Assertion.equalTo
-import zio.test.Assertion.hasSameElements
+import zio.test.Assertion.{equalTo, hasSameElements}
 import zio.test.TestAspect._
 import zio.test._
 import zio.test.environment._
+import zio.{ExitCode, Ref, Task}
 
 object VisitsServiceSpec extends DefaultRunnableSpec {
 
-  def spec =
+  def spec: Spec[TestEnvironment, TestFailure[Any], TestSuccess] =
     suiteM("VisitsService")(
       for {
         initialServicePortToTry <- Ref.make(49352)
@@ -54,9 +51,7 @@ object VisitsServiceSpec extends DefaultRunnableSpec {
                   )
                 )
               ).eventually
-            } yield {
-              testResult
-            }
+            } yield testResult
 
           }.provideCustomLayer(runningMySqlAndGrpcClient(initialServicePortToTry)) @@ timeout(
             25.seconds
@@ -101,9 +96,7 @@ object VisitsServiceSpec extends DefaultRunnableSpec {
                   )
                 )
               ).eventually
-            } yield {
-              testResult
-            }
+            } yield testResult
 
           }.provideCustomLayer(runningMySqlAndGrpcClient(initialServicePortToTry)) @@ timeout(
             25.seconds
@@ -139,9 +132,7 @@ object VisitsServiceSpec extends DefaultRunnableSpec {
                   )
                 )
               ).eventually
-            } yield {
-              testResult
-            }
+            } yield testResult
           }.provideCustomLayer(runningMySqlAndGrpcClient(initialServicePortToTry)) @@ timeout(
             25.seconds
           )
@@ -172,8 +163,6 @@ object VisitsServiceSpec extends DefaultRunnableSpec {
           case _                => Task.unit
         }
         .fork
-    } yield {
-      f
-    }
+    } yield f
 
 }

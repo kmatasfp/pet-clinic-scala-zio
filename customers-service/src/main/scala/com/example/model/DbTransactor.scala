@@ -2,11 +2,8 @@ package com.example.model
 
 import com.example.config.Configuration.DbConfig
 import doobie.util.transactor.Transactor
-import zio.Has
-import zio.Task
-import zio.URLayer
-import zio.ZLayer
 import zio.interop.catz._
+import zio.{Has, Task, URLayer, ZLayer}
 
 object DbTransactor {
   trait Resource {

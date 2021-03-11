@@ -1,16 +1,15 @@
 package com.example.model
 
-import java.time.LocalDate
-
-import com.example.fixture.RunningMysql
-import com.example.fixture.mysqlDbConf
+import com.example.fixture.{RunningMysql, mysqlDbConf}
 import zio.test.Assertion.hasSameElements
-import zio.test.DefaultRunnableSpec
-import zio.test._
+import zio.test.environment.TestEnvironment
+import zio.test.{DefaultRunnableSpec, _}
+
+import java.time.LocalDate
 
 object OwnerDaoSpec extends DefaultRunnableSpec {
 
-  def spec =
+  def spec: Spec[TestEnvironment, TestFailure[Throwable], TestSuccess] =
     suite("OwnerDao.mySql")(
       testM("should return all owners from mysql db") {
         assertM(OwnerDao.findAll)(

@@ -1,20 +1,18 @@
 package com.example.model
 
-import java.time.LocalDate
-
 import com.example.config.Configuration.DbConfig
 import com.example.fixture.RunningMysql
-import com.example.model.DbTransactor
-import com.example.model.Visit
-import com.example.model.VisitDao
+import com.example.model.{DbTransactor, Visit, VisitDao}
 import zio.ZLayer
 import zio.test.Assertion._
-import zio.test.DefaultRunnableSpec
-import zio.test._
+import zio.test.environment.TestEnvironment
+import zio.test.{DefaultRunnableSpec, _}
+
+import java.time.LocalDate
 
 object VisitDaoSpec extends DefaultRunnableSpec {
 
-  def spec =
+  def spec: Spec[TestEnvironment, TestFailure[Throwable], TestSuccess] =
     suite("VisitDao.mySql")(
       testM("should return visits for a pet from mysql db") {
 
@@ -103,8 +101,6 @@ object VisitDaoSpec extends DefaultRunnableSpec {
     dbPassword <- RunningMysql.password
     dbUrl <- RunningMysql.jdbcUrl
     jdbcClassName <- RunningMysql.driverClassName
-  } yield {
-    DbConfig(jdbcClassName, dbUrl, dbUser, dbPassword)
-  })
+  } yield DbConfig(jdbcClassName, dbUrl, dbUser, dbPassword))
 
 }

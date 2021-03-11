@@ -1,36 +1,18 @@
 package com.example
 
-import java.time.Instant
-import java.time.LocalTime
-import java.time.ZoneOffset
-
 import cats.instances.option._
 import cats.syntax.apply._
 import com.example.config.Configuration.DbConfig
-import com.example.model.DbTransactor
-import com.example.model.VisitDao
-import com.examples.proto.api.visits_service.CreateVisitRequest
-import com.examples.proto.api.visits_service.CreateVisitResponse
-import com.examples.proto.api.visits_service.GetVisitsForPetRequest
-import com.examples.proto.api.visits_service.GetVisitsForPetsRequest
-import com.examples.proto.api.visits_service.GetVisitsResponse
-import com.examples.proto.api.visits_service.Visit
-import com.examples.proto.api.visits_service.VisitId
-import com.examples.proto.api.visits_service.ZioVisitsService
+import com.example.model.{DbTransactor, VisitDao}
+import com.examples.proto.api.visits_service._
 import com.google.protobuf.timestamp.Timestamp
-import io.grpc.ServerBuilder
-import io.grpc.Status
 import io.grpc.protobuf.services.ProtoReflectionService
-import scalapb.zio_grpc.ServerLayer
-import zio.ExitCode
-import zio.Has
-import zio.IO
-import zio.URLayer
-import zio.ZEnv
-import zio.ZIO
-import zio.ZLayer
+import io.grpc.{ServerBuilder, Status}
+import scalapb.zio_grpc.{Server, ServerLayer}
+import zio._
 import zio.console.putStrLn
-import zio.system
+
+import java.time.{Instant, LocalTime, ZoneOffset}
 
 object VisitsService {
 
@@ -69,9 +51,7 @@ object VisitsService {
                         description = v.description
                       )
                     )
-                    .map(savedVisit =>
-                      CreateVisitResponse(visit = Some(toServiceVisit(savedVisit)))
-                    )
+                    .map(savedVisit => CreateVisitResponse(visit = Some(toServiceVisit(savedVisit))))
                     .mapError(_ => Status.INTERNAL)
                 )
             )
@@ -105,25 +85,27 @@ object VisitsServiceServer extends zio.App {
   def welcome: ZIO[ZEnv, Throwable, Unit] =
     putStrLn("Server is running. Press Ctrl-C to stop.")
 
-  val app = system.envOrElse("server.port", "9001").map(_.toInt).map { port =>
-    val builder = ServerBuilder.forPort(port).addService(ProtoReflectionService.newInstance())
+  val app
+      : ZIO[zio.system.System, SecurityException, ZLayer[zio.system.System with ZEnv, Throwable, Has[Server.Service]]] =
+    system.envOrElse("server.port", "9001").map(_.toInt).map { port =>
+      val builder = ServerBuilder.forPort(port).addService(ProtoReflectionService.newInstance())
 
-    val server =
-      ServerLayer.fromServiceLayer(builder)(VisitsService.live)
+      val server =
+        ServerLayer.fromServiceLayer(builder)(VisitsService.live)
 
-    val dbConf = ZLayer.fromEffect(
-      ZIO
-        .mapN(
-          system.env("jdbc.driver.name"),
-          system.env("jdbc.url"),
-          system.env("db.user"),
-          system.env("db.pass")
-        )((_, _, _, _).mapN(DbConfig))
-        .someOrFail(new NoSuchElementException)
-    )
+      val dbConf = ZLayer.fromEffect(
+        ZIO
+          .mapN(
+            system.env("jdbc.driver.name"),
+            system.env("jdbc.url"),
+            system.env("db.user"),
+            system.env("db.pass")
+          )((_, _, _, _).mapN(DbConfig))
+          .someOrFail(new NoSuchElementException)
+      )
 
-    ((dbConf >>> DbTransactor.live >>> VisitDao.mySql) ++ ZEnv.any) >>> server
-  }
+      ((dbConf >>> DbTransactor.live >>> VisitDao.mySql) ++ ZEnv.any) >>> server
+    }
 
   def run(args: List[String]): zio.URIO[zio.ZEnv, ExitCode] =
     (welcome *> app.flatMap(_.build.useForever)).exitCode

@@ -5,13 +5,9 @@ import doobie.implicits._
 import doobie.quill.DoobieContext
 import doobie.util.transactor.Transactor
 import io.getquill._
-import zio.Has
-import zio.Ref
-import zio.Task
-import zio.URLayer
-import zio.ZLayer
 import zio.interop.catz._
 import zio.macros.accessible
+import zio.{Has, Ref, Task, URLayer, ZLayer}
 
 final case class Specialty(id: Int, name: String)
 
@@ -44,17 +40,14 @@ object VetDao {
 
       def findAll: zio.Task[List[(Vet, Option[Specialty])]] =
         dc.run(
-            quote {
-              for {
-                v <- vets
-                vs <- vetSpecialities.leftJoin(_.vetId == v.id)
-                s <- specialties.leftJoin(s => vs.exists(_.specialtyId == s.id))
-              } yield {
-                (v, s)
-              }
-            }
-          )
-          .transact(resource.xa)
+          quote {
+            for {
+              v <- vets
+              vs <- vetSpecialities.leftJoin(_.vetId == v.id)
+              s <- specialties.leftJoin(s => vs.exists(_.specialtyId == s.id))
+            } yield (v, s)
+          }
+        ).transact(resource.xa)
 
     }
   )

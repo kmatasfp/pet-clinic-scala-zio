@@ -1,21 +1,16 @@
 package com.example.fixture
 
+import com.examples.proto.api.visits_service.ZioVisitsService
 import io.grpc.ManagedChannelBuilder
 import scalapb.zio_grpc.ZManagedChannel
-import zio.UIO
-import zio.ZLayer
-import zio.ZManaged
 import zio.macros.accessible
-import com.examples.proto.api.visits_service.ZioVisitsService
+import zio.{UIO, ZLayer, ZManaged}
 
 @accessible
 object VisitsGrpcService {
   trait Service {
     def port: UIO[Int]
-    def client: UIO[
-      ZioVisitsService
-        .VisitsClient.Service
-    ]
+    def client: UIO[ZioVisitsService.VisitsClient.Service]
   }
 
   val live: ZLayer[OpenPortFinder, Throwable, VisitsGrpcService] =
@@ -28,10 +23,8 @@ object VisitsGrpcService {
             ManagedChannelBuilder.forAddress("localhost", p).usePlaintext()
           )
         )
-    } yield {
-      new VisitsGrpcService.Service {
-        def client: UIO[ZioVisitsService.VisitsClient.Service] = UIO.effectTotal(c)
-        def port: UIO[Int] = UIO.effectTotal(p)
-      }
+    } yield new VisitsGrpcService.Service {
+      def client: UIO[ZioVisitsService.VisitsClient.Service] = UIO.effectTotal(c)
+      def port: UIO[Int] = UIO.effectTotal(p)
     })
 }

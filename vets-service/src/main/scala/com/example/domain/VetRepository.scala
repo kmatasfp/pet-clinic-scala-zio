@@ -1,10 +1,8 @@
 package com.example.domain
 
 import com.example.model.VetDao
-import zio.Task
-import zio.URLayer
-import zio.ZLayer
 import zio.macros.accessible
+import zio.{Task, URLayer, ZLayer}
 
 case class Specialty(name: String)
 

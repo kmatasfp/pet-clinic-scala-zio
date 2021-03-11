@@ -3,11 +3,9 @@ package com.example.model
 import doobie.implicits._
 import doobie.quill.DoobieContext
 import io.getquill._
-import zio.Task
-import zio.URLayer
-import zio.ZLayer
 import zio.interop.catz._
 import zio.macros.accessible
+import zio.{Task, URLayer, ZLayer}
 
 @accessible
 object PetDao {
@@ -30,26 +28,25 @@ object PetDao {
 
       private val owners = quote(querySchema[Owner]("owners"))
 
-      def findById(petId: Int): Task[List[(Pet, PetType, Owner)]] = 
+      def findById(petId: Int): Task[List[(Pet, PetType, Owner)]] =
         dc.run(
-            quote {
-                for {
-                    p <- pets if(p.id == lift(petId))
-                    t <- types if(t.id == p.typeId)
-                    o <- owners if(o.id == p.ownerId) 
-                } yield {
-                    (p, t, o)
-                }
-            }
+          quote {
+            for {
+              p <- pets if p.id == lift(petId)
+              t <- types if t.id == p.typeId
+              o <- owners if o.id == p.ownerId
+            } yield (p, t, o)
+          }
         ).transact(resource.xa)
 
       def getPetTypes: Task[List[PetType]] =
         dc.run(types).transact(resource.xa)
 
       def save(pet: Pet): Task[Pet] =
-        dc.run(pets.insert(lift(pet)).returningGenerated(_.id)).transact(resource.xa)
-        .map(id => pet.copy(id = id))    
-        
+        dc.run(pets.insert(lift(pet)).returningGenerated(_.id))
+          .transact(resource.xa)
+          .map(id => pet.copy(id = id))
+
     }
   )
 }
