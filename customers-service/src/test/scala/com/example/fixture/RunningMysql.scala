@@ -1,6 +1,7 @@
 package com.example.fixture
 
 import com.dimafeng.testcontainers.MySQLContainer
+import org.testcontainers.utility.DockerImageName
 import zio.macros.accessible
 import zio.{Task, UIO, ZLayer, ZManaged}
 
@@ -18,7 +19,7 @@ object RunningMysql {
   def live: ZLayer[Any, Throwable, RunningMysql] = {
     val acquire = Task {
 
-      val mysql = MySQLContainer().configure { c =>
+      val mysql = MySQLContainer(mysqlImageVersion = DockerImageName.parse("mysql:5.7.34")).configure { c =>
         c.withUsername("root")
         c.withPassword("")
         c.withInitScript("db/mysql/init.sql")

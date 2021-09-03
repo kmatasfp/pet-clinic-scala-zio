@@ -65,13 +65,12 @@ lazy val petclinicVetsService = project
       "org.tpolecat" %% "doobie-core" % "0.9.4",
       "org.tpolecat" %% "doobie-h2" % "0.9.4",
       "org.tpolecat" %% "doobie-quill" % "0.9.4",
-      "mysql" % "mysql-connector-java" % "8.0.21",
+      "mysql" % "mysql-connector-java" % "8.0.26",
       "dev.zio" %% "zio-test" % "1.0.7" % Test,
       "dev.zio" %% "zio-test-sbt" % "1.0.7" % Test,
       "dev.zio" %% "zio-test-magnolia" % "1.0.7" % Test,
-      "com.dimafeng" %% "testcontainers-scala-core" % "0.38.7" % Test,
-      "com.dimafeng" %% "testcontainers-scala-mysql" % "0.38.7" % Test,
-      "org.testcontainers" % "testcontainers" % "1.15.1" % Test
+      "com.dimafeng" %% "testcontainers-scala-core" % "0.39.6" % Test,
+      "com.dimafeng" %% "testcontainers-scala-mysql" % "0.39.6" % Test
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
   )
@@ -90,13 +89,12 @@ lazy val petclinicVisitsService = project
       "org.tpolecat" %% "doobie-core" % "0.9.4",
       "org.tpolecat" %% "doobie-h2" % "0.9.4",
       "org.tpolecat" %% "doobie-quill" % "0.9.4",
-      "mysql" % "mysql-connector-java" % "8.0.21",
+      "mysql" % "mysql-connector-java" % "8.0.26",
       "dev.zio" %% "zio-test" % "1.0.7" % Test,
       "dev.zio" %% "zio-test-sbt" % "1.0.7" % Test,
       "dev.zio" %% "zio-test-magnolia" % "1.0.7" % Test,
-      "com.dimafeng" %% "testcontainers-scala-core" % "0.38.1" % Test,
-      "com.dimafeng" %% "testcontainers-scala-mysql" % "0.38.1" % Test,
-      "org.testcontainers" % "testcontainers" % "1.15.1" % Test
+      "com.dimafeng" %% "testcontainers-scala-core" % "0.39.6" % Test,
+      "com.dimafeng" %% "testcontainers-scala-mysql" % "0.39.6" % Test
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
   )
@@ -115,13 +113,12 @@ lazy val petclinicCustomersService = project
       "org.tpolecat" %% "doobie-core" % "0.9.4",
       "org.tpolecat" %% "doobie-h2" % "0.9.4",
       "org.tpolecat" %% "doobie-quill" % "0.9.4",
-      "mysql" % "mysql-connector-java" % "8.0.21",
+      "mysql" % "mysql-connector-java" % "8.0.26",
       "dev.zio" %% "zio-test" % "1.0.7" % Test,
       "dev.zio" %% "zio-test-sbt" % "1.0.7" % Test,
       "dev.zio" %% "zio-test-magnolia" % "1.0.7" % Test,
-      "com.dimafeng" %% "testcontainers-scala-core" % "0.38.1" % Test,
-      "com.dimafeng" %% "testcontainers-scala-mysql" % "0.38.1" % Test,
-      "org.testcontainers" % "testcontainers" % "1.15.1" % Test
+      "com.dimafeng" %% "testcontainers-scala-core" % "0.39.6" % Test,
+      "com.dimafeng" %% "testcontainers-scala-mysql" % "0.39.6" % Test
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
   )
